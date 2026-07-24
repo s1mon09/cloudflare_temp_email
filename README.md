@@ -20,6 +20,9 @@
   <a href="">
     <img src="https://img.shields.io/github/last-commit/dreamhunter2333/cloudflare_temp_email">
   </a>
+  <a href="https://coderabbit.ai" target="_blank">
+    <img alt="CodeRabbit Reviews" src="https://img.shields.io/coderabbit/prs/github/s1mon09/cloudflare_temp_email?utm_source=oss&utm_medium=github&utm_campaign=s1mon09%2Fcloudflare_temp_email&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews">
+  </a>
 </p>
 
 <p align="center">
