@@ -2,7 +2,7 @@ import { Context } from 'hono'
 
 import i18n from '../i18n';
 import { getBooleanValue } from '../utils';
-import { handleMailListQuery, deleteAddressWithData, updateAddressUpdatedAt } from '../common'
+import { handleMailListQuery, deleteAddressWithData, updateAddressUpdatedAt, escapeLikePattern } from '../common'
 import { resolveRawEmailRow } from '../gzip'
 import { getSendBalanceState } from './send_balance';
 
@@ -11,8 +11,18 @@ const listMails = async (c: Context<HonoCustomType>) => {
     if (!address) {
         return c.json({ "error": "No address" }, 400)
     }
-    const { limit, offset } = c.req.query();
+    const { limit, offset, keyword } = c.req.query();
     if (Number.parseInt(offset) <= 0) updateAddressUpdatedAt(c, address);
+    const trimmedKeyword = (keyword || '').trim();
+    if (trimmedKeyword) {
+        const pattern = escapeLikePattern(trimmedKeyword);
+        const searchClause = `address = ? and (source LIKE ? ESCAPE '\\' or raw LIKE ? ESCAPE '\\')`;
+        return await handleMailListQuery(c,
+            `SELECT * FROM raw_mails where ${searchClause}`,
+            `SELECT count(*) as count FROM raw_mails where ${searchClause}`,
+            [address, pattern, pattern], limit, offset
+        );
+    }
     return await handleMailListQuery(c,
         `SELECT * FROM raw_mails where address = ?`,
         `SELECT count(*) as count FROM raw_mails where address = ?`,

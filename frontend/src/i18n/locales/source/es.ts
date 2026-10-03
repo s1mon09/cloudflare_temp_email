@@ -262,7 +262,7 @@ export const esMessages = {
   "views.common.Login.bindUserAddressError": "Error al vincular la dirección al usuario",
   "views.admin.IpBlacklistSettings.ip_whitelist_placeholder": "IP exacta (p. ej., 1.2.3.4) o regex anclada (p. ej., ^192\\.168\\.1\\.\\d+$)",
   "views.index.SimpleIndex.exitSimpleIndex": "Salir del modo simple",
-  "components.MailBox.keywordQueryTip": "Filtrar página actual",
+  "components.MailBox.keywordQueryTip": "Buscar en todos los correos",
   "views.admin.AccountSettings.create_address_subdomain_match_follow_env": "Seguir variable de entorno",
   "views.admin.AccountSettings.create_address_subdomain_match_force_disable": "Forzar deshabilitación",
   "views.admin.AccountSettings.create_address_subdomain_match_force_enable": "Forzar habilitación",
@@ -671,5 +671,9 @@ export const esMessages = {
   "views.user.AddressManagement.query": "Consultar",
   "views.user.AddressManagement.invalidQuery": "La búsqueda no puede superar 100 caracteres ni contener % o _",
   "views.index.SimpleIndex.readStatusUpdated": "Estado de lectura actualizado",
+  "views.index.SimpleIndex.copyFailed": "No se pudo copiar",
+  "views.index.SimpleIndex.deleteFailed": "No se pudo eliminar el correo",
+  "views.index.SimpleIndex.fetchMailsFailed": "No se pudieron cargar los correos",
+  "views.admin.Maintenance.cleanupConfirm": "¿Seguro que quieres ejecutar esta limpieza ahora? Los datos eliminados no se pueden recuperar.",
   "views.common.Appearance.autoLoadRemoteImages": "Cargar automáticamente las imágenes externas del correo"
 }

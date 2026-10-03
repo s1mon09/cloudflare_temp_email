@@ -1,15 +1,23 @@
 import { Context } from "hono";
-import { handleMailListQuery } from "../common";
+import { escapeLikePattern, handleMailListQuery } from "../common";
 import { resolveRawEmailRow } from "../gzip";
 
 export default {
     getMails: async (c: Context<HonoCustomType>) => {
-        const { address, limit, offset } = c.req.query();
-        const addressQuery = address ? `address = ?` : "";
-        const addressParams = address ? [address] : [];
-        const filterQuerys = [addressQuery].filter((item) => item).join(" and ");
-        const finalQuery = filterQuerys.length > 0 ? `where ${filterQuerys}` : "";
-        const filterParams = [...addressParams]
+        const { address, limit, offset, keyword } = c.req.query();
+        const filterQuerys: string[] = [];
+        const filterParams: string[] = [];
+        if (address) {
+            filterQuerys.push(`address = ?`);
+            filterParams.push(address);
+        }
+        const trimmedKeyword = (keyword || '').trim();
+        if (trimmedKeyword) {
+            const pattern = escapeLikePattern(trimmedKeyword);
+            filterQuerys.push(`(source LIKE ? ESCAPE '\\' or address LIKE ? ESCAPE '\\' or raw LIKE ? ESCAPE '\\')`);
+            filterParams.push(pattern, pattern, pattern);
+        }
+        const finalQuery = filterQuerys.length > 0 ? `where ${filterQuerys.join(" and ")}` : "";
         return await handleMailListQuery(c,
             `SELECT * FROM raw_mails ${finalQuery}`,
             `SELECT count(*) as count FROM raw_mails ${finalQuery}`,

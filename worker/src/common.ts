@@ -709,6 +709,13 @@ export const hideObjectFields = <T extends Record<string, unknown>>(
 }
 
 /**
+ * Build a LIKE pattern for keyword search, escaping wildcard characters.
+ * Pair with `ESCAPE '\\'` in the SQL clause.
+ */
+export const escapeLikePattern = (keyword: string): string =>
+    `%${keyword.replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+
+/**
  * handleListQuery variant for raw_mails: resolves raw_blob → raw after query.
  */
 export const handleMailListQuery = async (

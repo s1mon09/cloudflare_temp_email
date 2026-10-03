@@ -262,7 +262,7 @@ export const deMessages = {
   "views.common.Login.bindUserAddressError": "Fehler beim Verknüpfen der E-Mail-Adresse mit dem Benutzer",
   "views.admin.IpBlacklistSettings.ip_whitelist_placeholder": "Exakte IP (z. B. 1.2.3.4) oder verankerte Regex (z. B. ^192\\.168\\.1\\.\\d+$)",
   "views.index.SimpleIndex.exitSimpleIndex": "Einfachen Modus verlassen",
-  "components.MailBox.keywordQueryTip": "Aktuelle Seite filtern",
+  "components.MailBox.keywordQueryTip": "Alle E-Mails durchsuchen",
   "views.admin.AccountSettings.create_address_subdomain_match_follow_env": "Umgebungsvariable folgen",
   "views.admin.AccountSettings.create_address_subdomain_match_force_disable": "Erzwingt deaktivieren",
   "views.admin.AccountSettings.create_address_subdomain_match_force_enable": "Erzwingt aktivieren",
@@ -671,5 +671,9 @@ export const deMessages = {
   "views.user.AddressManagement.query": "Abfragen",
   "views.user.AddressManagement.invalidQuery": "Suchbegriff darf höchstens 100 Zeichen lang sein und weder % noch _ enthalten",
   "views.index.SimpleIndex.readStatusUpdated": "Lesestatus aktualisiert",
+  "views.index.SimpleIndex.copyFailed": "Kopieren fehlgeschlagen",
+  "views.index.SimpleIndex.deleteFailed": "E-Mail konnte nicht gelöscht werden",
+  "views.index.SimpleIndex.fetchMailsFailed": "E-Mails konnten nicht geladen werden",
+  "views.admin.Maintenance.cleanupConfirm": "Möchtest du diese Bereinigung jetzt wirklich ausführen? Gelöschte Daten können nicht wiederhergestellt werden.",
   "views.common.Appearance.autoLoadRemoteImages": "Externe Bilder im E-Mail-Inhalt automatisch laden"
 }

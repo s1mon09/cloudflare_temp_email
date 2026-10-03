@@ -262,7 +262,7 @@ export const ptBRMessages = {
   "views.common.Login.bindUserAddressError": "Erro ao vincular o endereço ao usuário",
   "views.admin.IpBlacklistSettings.ip_whitelist_placeholder": "IP exato (ex.: 1.2.3.4) ou regex ancorada (ex.: ^192\\.168\\.1\\.\\d+$)",
   "views.index.SimpleIndex.exitSimpleIndex": "Sair do modo simples",
-  "components.MailBox.keywordQueryTip": "Filtrar página atual",
+  "components.MailBox.keywordQueryTip": "Pesquisar em todos os e-mails",
   "views.admin.AccountSettings.create_address_subdomain_match_follow_env": "Seguir variável de ambiente",
   "views.admin.AccountSettings.create_address_subdomain_match_force_disable": "Forçar desativação",
   "views.admin.AccountSettings.create_address_subdomain_match_force_enable": "Forçar ativação",
@@ -671,5 +671,9 @@ export const ptBRMessages = {
   "views.user.AddressManagement.query": "Consultar",
   "views.user.AddressManagement.invalidQuery": "A busca deve ter no máximo 100 caracteres e não pode conter % ou _",
   "views.index.SimpleIndex.readStatusUpdated": "Status de leitura atualizado",
+  "views.index.SimpleIndex.copyFailed": "Falha ao copiar",
+  "views.index.SimpleIndex.deleteFailed": "Falha ao excluir o e-mail",
+  "views.index.SimpleIndex.fetchMailsFailed": "Falha ao carregar os e-mails",
+  "views.admin.Maintenance.cleanupConfirm": "Tem certeza de que deseja executar esta limpeza agora? Os dados excluídos não podem ser recuperados.",
   "views.common.Appearance.autoLoadRemoteImages": "Carregar automaticamente imagens externas no corpo do e-mail"
 }

@@ -17,12 +17,13 @@ const queryMail = () => {
     mailBoxKey.value = Date.now();
 }
 
-const fetchMailData = async (limit, offset) => {
+const fetchMailData = async (limit, offset, keyword) => {
     return await api.fetch(
         `/admin/mails`
         + `?limit=${limit}`
         + `&offset=${offset}`
-        + (adminMailTabAddress.value ? `&address=${adminMailTabAddress.value}` : '')
+        + (adminMailTabAddress.value ? `&address=${encodeURIComponent(adminMailTabAddress.value)}` : '')
+        + (keyword ? `&keyword=${encodeURIComponent(keyword)}` : '')
     );
 }
 

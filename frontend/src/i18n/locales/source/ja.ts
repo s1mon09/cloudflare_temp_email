@@ -262,7 +262,7 @@ export const jaMessages = {
   "views.common.Login.bindUserAddressError": "メールアドレスをユーザーに紐付ける際にエラーが発生しました",
   "views.admin.IpBlacklistSettings.ip_whitelist_placeholder": "完全一致IP（例: 1.2.3.4）またはアンカー付き正規表現（例: ^192\\.168\\.1\\.\\d+$）",
   "views.index.SimpleIndex.exitSimpleIndex": "シンプルモードを終了",
-  "components.MailBox.keywordQueryTip": "現在のページを絞り込む",
+  "components.MailBox.keywordQueryTip": "すべてのメールを検索",
   "views.admin.AccountSettings.create_address_subdomain_match_follow_env": "環境変数に従う",
   "views.admin.AccountSettings.create_address_subdomain_match_force_disable": "強制的に無効化",
   "views.admin.AccountSettings.create_address_subdomain_match_force_enable": "強制的に有効化",
@@ -671,5 +671,9 @@ export const jaMessages = {
   "views.user.AddressManagement.query": "検索",
   "views.user.AddressManagement.invalidQuery": "検索語は100文字以内で、% と _ は使用できません",
   "views.index.SimpleIndex.readStatusUpdated": "既読状態を更新しました",
+  "views.index.SimpleIndex.copyFailed": "コピーに失敗しました",
+  "views.index.SimpleIndex.deleteFailed": "メールの削除に失敗しました",
+  "views.index.SimpleIndex.fetchMailsFailed": "メールの取得に失敗しました",
+  "views.admin.Maintenance.cleanupConfirm": "このクリーンアップを今すぐ実行しますか？削除されたデータは復元できません。",
   "views.common.Appearance.autoLoadRemoteImages": "メール本文の外部画像を自動的に読み込む"
 }

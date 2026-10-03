@@ -65,7 +65,8 @@ const props = defineProps({
   },
 })
 
-const localFilterKeyword = ref('')
+const searchKeyword = ref('')
+let searchDebounceTimer = null
 
 const {
   isDark, mailboxSplitSize, mailListView, mailListPreviewLineClamp, indexTab, loading, useUTCDate,
@@ -85,22 +86,8 @@ const mailListPreviewLineClampValue = computed(() => {
   return Math.min(5, Math.max(0, Math.round(value)))
 })
 
-// Computed property for filtered data (only filter current page)
-const data = computed(() => {
-  if (!localFilterKeyword.value || localFilterKeyword.value.trim() === '') {
-    return rawData.value;
-  }
-  const keyword = localFilterKeyword.value.toLowerCase();
-  return rawData.value.filter(mail => {
-    // Search in subject, text, message fields
-    const searchFields = [
-      mail.subject || '',
-      mail.text || '',
-      mail.message || ''
-    ].map(field => field.toLowerCase());
-    return searchFields.some(field => field.includes(keyword));
-  });
-})
+// Mail list is rendered from rawData; keyword search is delegated to the server.
+const data = computed(() => rawData.value)
 
 const openMail = (mail) => {
   curMail.value = mail
@@ -209,7 +196,7 @@ watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
 const refresh = async () => {
   try {
     const { results, count: totalCount } = await props.fetchMailData(
-      pageSize.value, (page.value - 1) * pageSize.value
+      pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
     );
     loading.value = true;
     rawData.value = await Promise.all(results.map(async (item) => {
@@ -235,6 +222,18 @@ const backFirstPageAndRefresh = async () => {
   page.value = 1;
   await refresh();
 }
+
+watch(searchKeyword, () => {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(async () => {
+    if (page.value !== 1) {
+      // Changing page triggers the page watcher which refreshes with the keyword.
+      page.value = 1;
+    } else {
+      await refresh();
+    }
+  }, 300)
+})
 
 const clickRow = (row) => {
   if (multiActionMode.value) {
@@ -365,6 +364,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearInterval(timer.value)
+  clearTimeout(searchDebounceTimer)
 })
 </script>
 
@@ -412,7 +412,7 @@ onBeforeUnmount(() => {
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
             {{ t('refresh') }}
           </n-button>
-          <n-input v-if="showFilterInput" v-model:value="localFilterKeyword"
+          <n-input v-if="showFilterInput" v-model:value="searchKeyword"
             :placeholder="t('keywordQueryTip')" style="width: 200px; display: flex; align-items: center;"
             clearable />
         </n-space>
@@ -563,7 +563,7 @@ onBeforeUnmount(() => {
         </n-button>
       </n-space>
       <div v-if="showFilterInput" style="padding: 0 10px; margin-top: 8px; margin-bottom: 10px;">
-        <n-input v-model:value="localFilterKeyword"
+        <n-input v-model:value="searchKeyword"
           :placeholder="t('keywordQueryTip')" size="small" clearable />
       </div>
       <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">

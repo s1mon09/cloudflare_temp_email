@@ -76,8 +76,8 @@ export const MESSAGE_REGISTRY = {
       "zh": "转发"
     },
     "keywordQueryTip": {
-      "en": "Filter current page",
-      "zh": "过滤当前页"
+      "en": "Search all mails",
+      "zh": "搜索全部邮件"
     },
     "multiAction": {
       "en": "Multi Action",
@@ -1384,6 +1384,18 @@ export const MESSAGE_REGISTRY = {
     "copyAddress": {
       "en": "Copy",
       "zh": "复制"
+    },
+    "copyFailed": {
+      "en": "Copy failed",
+      "zh": "复制失败"
+    },
+    "deleteFailed": {
+      "en": "Failed to delete mail",
+      "zh": "删除邮件失败"
+    },
+    "fetchMailsFailed": {
+      "en": "Failed to fetch mails",
+      "zh": "获取邮件失败"
     },
     "deleteSuccess": {
       "en": "Mail deleted successfully",
@@ -2752,6 +2764,10 @@ export const MESSAGE_REGISTRY = {
     "cleanupNow": {
       "en": "Cleanup now",
       "zh": "立即清理"
+    },
+    "cleanupConfirm": {
+      "en": "Are you sure to run this cleanup now? Deleted data cannot be recovered.",
+      "zh": "确定要立即执行此清理吗？已删除的数据无法恢复。"
     },
     "cleanupSuccess": {
       "en": "Cleanup success",

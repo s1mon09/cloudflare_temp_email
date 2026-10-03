@@ -28,7 +28,10 @@ const cleanupModel = ref({
 
 const { t } = useScopedI18n('views.admin.Maintenance')
 
+const cleanupRunning = ref('')
+
 const cleanup = async (cleanType, cleanDays) => {
+    cleanupRunning.value = cleanType
     try {
         await api.fetch('/admin/cleanup', {
             method: 'POST',
@@ -37,6 +40,8 @@ const cleanup = async (cleanType, cleanDays) => {
         message.success(t('cleanupSuccess'));
     } catch (error) {
         message.error(error.message || "error");
+    } finally {
+        cleanupRunning.value = ''
     }
 }
 
@@ -105,84 +110,126 @@ onMounted(async () => {
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanMailsDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('mails', cleanupModel.cleanMailsDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('mails', cleanupModel.cleanMailsDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'mails'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'mails'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('mailUnknowLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableUnknowMailsAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanUnknowMailsDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('mails_unknow', cleanupModel.cleanUnknowMailsDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('mails_unknow', cleanupModel.cleanUnknowMailsDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'mails_unknow'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'mails_unknow'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('sendBoxLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableSendBoxAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanSendBoxDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('sendbox', cleanupModel.cleanSendBoxDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('sendbox', cleanupModel.cleanSendBoxDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'sendbox'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'sendbox'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('addressCreateLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableAddressAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanAddressDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('addressCreated', cleanupModel.cleanAddressDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('addressCreated', cleanupModel.cleanAddressDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'addressCreated'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'addressCreated'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('inactiveAddressLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableInactiveAddressAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanInactiveAddressDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('inactiveAddress', cleanupModel.cleanInactiveAddressDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('inactiveAddress', cleanupModel.cleanInactiveAddressDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'inactiveAddress'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'inactiveAddress'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('unboundAddressLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableUnboundAddressAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanUnboundAddressDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('unboundAddress', cleanupModel.cleanUnboundAddressDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('unboundAddress', cleanupModel.cleanUnboundAddressDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'unboundAddress'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'unboundAddress'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                         <n-form-item-row :label="t('emptyAddressLabel')">
                             <n-checkbox v-model:checked="cleanupModel.enableEmptyAddressAutoCleanup">
                                 {{ t('autoCleanup') }}
                             </n-checkbox>
                             <n-input-number v-model:value="cleanupModel.cleanEmptyAddressDays" :placeholder="t('tip')" />
-                            <n-button @click="cleanup('emptyAddress', cleanupModel.cleanEmptyAddressDays)">
-                                <template #icon>
-                                    <n-icon :component="CleaningServicesFilled" />
+                            <n-popconfirm @positive-click="cleanup('emptyAddress', cleanupModel.cleanEmptyAddressDays)">
+                                <template #trigger>
+                                    <n-button :loading="cleanupRunning === 'emptyAddress'"
+                                        :disabled="cleanupRunning !== '' && cleanupRunning !== 'emptyAddress'">
+                                        <template #icon>
+                                            <n-icon :component="CleaningServicesFilled" />
+                                        </template>
+                                        {{ t('cleanupNow') }}
+                                    </n-button>
                                 </template>
-                                {{ t('cleanupNow') }}
-                            </n-button>
+                                {{ t('cleanupConfirm') }}
+                            </n-popconfirm>
                         </n-form-item-row>
                     </n-form>
                 </n-tab-pane>
