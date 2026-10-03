@@ -2,7 +2,7 @@
 import {
   darkTheme,
 } from 'naive-ui'
-import { computed, onMounted, watchEffect } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { useGlobalState } from './store'
@@ -26,11 +26,6 @@ const isMobile = useIsMobile()
 const showSideMargin = computed(() => !isMobile.value && useSideMargin.value);
 const showAd = computed(() => !isMobile.value && adClient && adSlot);
 const gridMaxCols = computed(() => showAd.value ? 8 : 12);
-
-watchEffect(() => {
-  if (typeof document === 'undefined') return
-  document.documentElement.lang = isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE
-})
 
 if (showAd.value) {
   useHead({

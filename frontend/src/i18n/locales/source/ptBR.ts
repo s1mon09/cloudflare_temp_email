@@ -1,4 +1,9 @@
 export const ptBRMessages = {
+  "router.index": "Temp Email - E-mail Temporário Grátis e Códigos de Verificação",
+  "router.user": "Central do Usuário - Temp Email",
+  "router.redeem": "Resgatar - Temp Email",
+  "router.admin": "Administração - Temp Email",
+  "router.telegramMail": "E-mail do Telegram - Temp Email",
   "components.WebhookComponent.randomMail": "E-mail aleatório",
   "components.WebhookComponent.specifiedMail": "Especificar ID",
   "components.WebhookComponent.mailId": "ID do e-mail",

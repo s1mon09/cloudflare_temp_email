@@ -1,4 +1,9 @@
 export const esMessages = {
+  "router.index": "Temp Email - Correo Temporal Gratis y Códigos de Verificación",
+  "router.user": "Centro de Usuario - Temp Email",
+  "router.redeem": "Canjear - Temp Email",
+  "router.admin": "Administración - Temp Email",
+  "router.telegramMail": "Correo de Telegram - Temp Email",
   "components.WebhookComponent.randomMail": "Correo aleatorio",
   "components.WebhookComponent.specifiedMail": "Especificar ID",
   "components.WebhookComponent.mailId": "ID del correo",

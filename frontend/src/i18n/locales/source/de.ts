@@ -1,4 +1,9 @@
 export const deMessages = {
+  "router.index": "Temp Email - Kostenlose Wegwerf-E-Mail & Verifizierungscodes",
+  "router.user": "Benutzerzentrum - Temp Email",
+  "router.redeem": "Einlösen - Temp Email",
+  "router.admin": "Verwaltung - Temp Email",
+  "router.telegramMail": "Telegram-Mail - Temp Email",
   "components.WebhookComponent.randomMail": "Zufällige E-Mail",
   "components.WebhookComponent.specifiedMail": "ID angeben",
   "components.WebhookComponent.mailId": "E-Mail-ID",

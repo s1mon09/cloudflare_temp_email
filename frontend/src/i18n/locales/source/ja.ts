@@ -1,4 +1,9 @@
 export const jaMessages = {
+  "router.index": "一時メール Temp Email - メールと認証コードを無料で受信",
+  "router.user": "ユーザーセンター - Temp Email",
+  "router.redeem": "引き換え - Temp Email",
+  "router.admin": "管理画面 - Temp Email",
+  "router.telegramMail": "Telegram メール - Temp Email",
   "components.WebhookComponent.randomMail": "ランダムなメール",
   "components.WebhookComponent.specifiedMail": "ID を指定",
   "components.WebhookComponent.mailId": "メール ID",

@@ -1,4 +1,11 @@
 export const MESSAGE_REGISTRY = {
+  "router": {
+    "index": { "en": "Temp Email - Free Online Disposable Email & Verification Codes", "zh": "临时邮箱 Temp Email - 免费在线接收邮件与验证码" },
+    "user": { "en": "User Center - Temp Email", "zh": "用户中心 - Temp Email" },
+    "redeem": { "en": "Redeem - Temp Email", "zh": "兑换 - Temp Email" },
+    "admin": { "en": "Admin - Temp Email", "zh": "管理后台 - Temp Email" },
+    "telegramMail": { "en": "Telegram Mail - Temp Email", "zh": "Telegram 邮件 - Temp Email" }
+  },
   "components.WebhookComponent": {
     "randomMail": { "en": "Random email", "zh": "随机邮件" },
     "specifiedMail": { "en": "Specify ID", "zh": "指定 ID" },

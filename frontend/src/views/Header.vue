@@ -13,6 +13,7 @@ import { Envelope, GithubAlt, Language, User } from '@vicons/fa'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
+import i18n from '../i18n'
 import { getRouterPathWithLang, hashPassword } from '../utils'
 import { DEFAULT_LOCALE, isSupportedLocale, replaceLocaleInFullPath } from '../i18n/utils'
 import { getLocaleLabel, SUPPORTED_LOCALES } from '../i18n/locale-registry'
@@ -211,10 +212,15 @@ const menuOptions = computed(() => [
     }
 ]);
 
+const routeTitle = computed(() => {
+    const titleKey = route.meta?.titleKey || 'router.index';
+    return i18n.global.t(titleKey);
+});
+
 useHead({
-    title: () => openSettings.value.title || t('title'),
+    title: () => openSettings.value.title || routeTitle.value,
     meta: [
-        { name: "description", content: openSettings.value.description || t('title') },
+        { name: "description", content: openSettings.value.description || routeTitle.value },
     ]
 });
 
