@@ -679,5 +679,10 @@ export const deMessages = {
   "components.MailBox.copyCode": "Code kopieren",
   "components.MailBox.copyFailed": "Kopieren fehlgeschlagen",
   "components.MailBox.copySuccess": "Kopiert",
-  "components.MailBox.latestCode": "Neuester Code"
+  "components.MailBox.latestCode": "Neuester Code",
+  "components.MailBox.notifyEnable": "Benachrichtigen",
+  "components.MailBox.notifyFailed": "Benachrichtigungen konnten nicht aktiviert werden",
+  "components.MailBox.notifyNewMail": "Neue E-Mail erhalten",
+  "components.MailBox.notifyNewMails": "{count} neue E-Mails erhalten",
+  "components.MailBox.notifyWithCode": "Bestätigungscode: {code}"
 }

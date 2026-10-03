@@ -679,5 +679,10 @@ export const esMessages = {
   "components.MailBox.copyCode": "Copiar código",
   "components.MailBox.copyFailed": "Error al copiar",
   "components.MailBox.copySuccess": "Copiado",
-  "components.MailBox.latestCode": "Último código"
+  "components.MailBox.latestCode": "Último código",
+  "components.MailBox.notifyEnable": "Notificarme",
+  "components.MailBox.notifyFailed": "No se pudieron activar las notificaciones",
+  "components.MailBox.notifyNewMail": "Nuevo correo recibido",
+  "components.MailBox.notifyNewMails": "Se recibieron {count} correos nuevos",
+  "components.MailBox.notifyWithCode": "Código de verificación: {code}"
 }

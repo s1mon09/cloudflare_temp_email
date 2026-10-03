@@ -3,7 +3,7 @@ import { watch, onMounted, ref, onBeforeUnmount, computed } from "vue";
 import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
-import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, ContentCopyOutlined } from '@vicons/material'
+import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, ContentCopyOutlined, NotificationsActiveFilled, NotificationsNoneFilled } from '@vicons/material'
 import { useIsMobile } from '../utils/composables'
 import { processItem } from '../utils/email-parser'
 import { utcToLocalDate } from '../utils';
@@ -164,6 +164,67 @@ const multiActionDeleteProgress = ref({ percentage: 0, tip: '0/0' })
 
 const { t } = useScopedI18n('components.MailBox')
 
+// New-mail browser notifications. Only fires while the tab is in the background,
+// so users get alerted without being spammed while reading.
+const NOTIFY_STORAGE_KEY = 'mailbox-notify-enabled'
+const notifySupported = typeof window !== 'undefined' && 'Notification' in window
+const notifyEnabled = ref(
+  notifySupported
+  && Notification.permission === 'granted'
+  && localStorage.getItem(NOTIFY_STORAGE_KEY) === '1'
+)
+let notifyTrackedIds = new Set()
+let notifyPrimed = false
+
+const toggleNotify = async () => {
+  if (!notifySupported) {
+    message.error(t('notifyFailed'))
+    return
+  }
+  if (notifyEnabled.value) {
+    notifyEnabled.value = false
+    localStorage.setItem(NOTIFY_STORAGE_KEY, '0')
+    return
+  }
+  const permission = await Notification.requestPermission()
+  if (permission !== 'granted') {
+    message.error(t('notifyFailed'))
+    return
+  }
+  notifyEnabled.value = true
+  localStorage.setItem(NOTIFY_STORAGE_KEY, '1')
+}
+
+const notifyNewMails = (mails) => {
+  const codeMail = mails.find((mail) => {
+    try {
+      return JSON.parse(mail.metadata)?.ai_extract?.type === 'auth_code'
+    } catch (e) {
+      return false
+    }
+  })
+  const body = codeMail
+    ? t('notifyWithCode', { code: JSON.parse(codeMail.metadata).ai_extract.result })
+    : `${mails[0].source || ''}: ${mails[0].subject || ''}`
+  const notification = new Notification(
+    mails.length > 1 ? t('notifyNewMails', { count: mails.length }) : t('notifyNewMail'),
+    { body, tag: 'mailbox-new-mail' }
+  )
+  notification.onclick = () => {
+    window.focus()
+    notification.close()
+  }
+}
+
+const handleNewMailNotification = (isFirstLoad) => {
+  if (!isFirstLoad && notifyEnabled.value && document.hidden
+    && !searchKeyword.value && page.value === 1) {
+    const fresh = rawData.value.filter((mail) => !notifyTrackedIds.has(mail.id))
+    if (fresh.length > 0) notifyNewMails(fresh)
+  }
+  notifyTrackedIds = new Set(rawData.value.map((mail) => mail.id))
+}
+
 const setupAutoRefresh = async (autoRefresh) => {
   // auto refresh every configAutoRefreshInterval seconds
   autoRefreshInterval.value = configAutoRefreshInterval.value;
@@ -203,6 +264,8 @@ const refresh = async () => {
       item.checked = false;
       return await processItem(item);
     }));
+    handleNewMailNotification(!notifyPrimed);
+    notifyPrimed = true;
     if (totalCount > 0) {
       count.value = totalCount;
     }
@@ -444,6 +507,13 @@ onBeforeUnmount(() => {
           </n-switch>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
             {{ t('refresh') }}
+          </n-button>
+          <n-button v-if="notifySupported" @click="toggleNotify" tertiary
+            :type="notifyEnabled ? 'success' : 'default'">
+            <template #icon>
+              <n-icon :component="notifyEnabled ? NotificationsActiveFilled : NotificationsNoneFilled" />
+            </template>
+            {{ t('notifyEnable') }}
           </n-button>
           <n-input v-if="showFilterInput" v-model:value="searchKeyword"
             :placeholder="t('keywordQueryTip')" style="width: 200px; display: flex; align-items: center;"

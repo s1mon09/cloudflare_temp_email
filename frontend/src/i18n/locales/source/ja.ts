@@ -679,5 +679,10 @@ export const jaMessages = {
   "components.MailBox.copyCode": "コードをコピー",
   "components.MailBox.copyFailed": "コピーに失敗しました",
   "components.MailBox.copySuccess": "コピーしました",
-  "components.MailBox.latestCode": "最新のコード"
+  "components.MailBox.latestCode": "最新のコード",
+  "components.MailBox.notifyEnable": "通知を受け取る",
+  "components.MailBox.notifyFailed": "通知を有効にできませんでした",
+  "components.MailBox.notifyNewMail": "新着メールを受信しました",
+  "components.MailBox.notifyNewMails": "{count} 件の新着メールを受信しました",
+  "components.MailBox.notifyWithCode": "認証コード: {code}"
 }

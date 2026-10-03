@@ -150,6 +150,26 @@ export const MESSAGE_REGISTRY = {
     "latestCode": {
       "en": "Latest code",
       "zh": "最新验证码"
+    },
+    "notifyEnable": {
+      "en": "Notify me",
+      "zh": "新邮件通知"
+    },
+    "notifyFailed": {
+      "en": "Failed to enable notifications",
+      "zh": "开启通知失败"
+    },
+    "notifyNewMail": {
+      "en": "New mail received",
+      "zh": "收到新邮件"
+    },
+    "notifyNewMails": {
+      "en": "{count} new mails received",
+      "zh": "收到 {count} 封新邮件"
+    },
+    "notifyWithCode": {
+      "en": "Verification code: {code}",
+      "zh": "验证码：{code}"
     }
   },
   "components.AiExtractInfo": {

@@ -679,5 +679,10 @@ export const ptBRMessages = {
   "components.MailBox.copyCode": "Copiar código",
   "components.MailBox.copyFailed": "Falha ao copiar",
   "components.MailBox.copySuccess": "Copiado",
-  "components.MailBox.latestCode": "Código mais recente"
+  "components.MailBox.latestCode": "Código mais recente",
+  "components.MailBox.notifyEnable": "Notificar-me",
+  "components.MailBox.notifyFailed": "Falha ao ativar as notificações",
+  "components.MailBox.notifyNewMail": "Novo e-mail recebido",
+  "components.MailBox.notifyNewMails": "{count} novos e-mails recebidos",
+  "components.MailBox.notifyWithCode": "Código de verificação: {code}"
 }
