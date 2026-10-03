@@ -77,10 +77,11 @@ watch(() => props.mail.id, () => {
 });
 
 const processedMail = computed(() => {
-  if (autoLoadRemoteImages.value || showRemoteImages.value) {
-    return { message: props.mail.message, blocked: 0 };
-  }
-  const { html, blocked } = blockRemoteContent(props.mail.message);
+  // 无论是否允许远程图片，正文都必须经过清洗：允许时只放行远程资源。
+  // 直接渲染原始 HTML 会让邮件里的内联事件处理器变成 XSS。
+  const { html, blocked } = blockRemoteContent(props.mail.message, {
+    allowRemoteImages: autoLoadRemoteImages.value || showRemoteImages.value,
+  });
   return { message: html, blocked };
 });
 

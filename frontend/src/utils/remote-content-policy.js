@@ -123,19 +123,23 @@ function blockCssUrls(cssText, onBlocked) {
     });
 }
 
-let purifier = null;
 let blockedCount = 0;
 
 /**
  * An isolated DOMPurify instance. The hooks below must not reach the shared
  * singleton, which mail-actions.js uses when building replies -- quoting a
  * mail should keep its images.
+ *
+ * @param {boolean} blockRemote when true, also drop every reference that makes
+ *   the browser fetch from a third party. When false only the generic XSS
+ *   sanitising runs and remote resources load -- callers must have an explicit
+ *   user opt-in before choosing that (see blockRemoteContent).
  */
-function getPurifier() {
-    if (purifier) {
+function createPurifier(blockRemote) {
+    const purifier = DOMPurify(window);
+    if (!blockRemote) {
         return purifier;
     }
-    purifier = DOMPurify(window);
 
     purifier.addHook('uponSanitizeAttribute', (node, data) => {
         if (!URL_ATTRIBUTES.has(data.attrName)) {
@@ -183,6 +187,16 @@ function getPurifier() {
     return purifier;
 }
 
+const purifiers = { block: null, allow: null };
+
+function getPurifier(blockRemote) {
+    const key = blockRemote ? 'block' : 'allow';
+    if (!purifiers[key]) {
+        purifiers[key] = createPurifier(blockRemote);
+    }
+    return purifiers[key];
+}
+
 /**
  * Strips everything in an email body that would make the browser fetch from a
  * third party, so opening the mail cannot be used to confirm it was read.
@@ -196,15 +210,20 @@ function getPurifier() {
  * cleaner never saw.
  *
  * @param {string} html
+ * @param {{ allowRemoteImages?: boolean }} [options] when allowRemoteImages is
+ *   true the body may load remote resources again. Sanitising still runs --
+ *   only the third-party fetch blocking is skipped. Rendering raw HTML instead
+ *   of sanitising it is never acceptable, because a mail body can carry inline
+ *   event handlers.
  * @returns {{ html: string, blocked: number }} blocked counts the references removed
  */
-export function blockRemoteContent(html) {
+export function blockRemoteContent(html, { allowRemoteImages = false } = {}) {
     if (!html || typeof html !== 'string') {
         return { html: html || '', blocked: 0 };
     }
 
     blockedCount = 0;
-    const sanitised = getPurifier().sanitize(html, {
+    const sanitised = getPurifier(!allowRemoteImages).sanitize(html, {
         FORBID_TAGS: FORBIDDEN,
         // Mail layout leans on <style> blocks, so they are kept and their
         // url() references filtered instead of dropping the tag wholesale.
@@ -216,5 +235,5 @@ export function blockRemoteContent(html) {
         ALLOW_DATA_ATTR: true,
     });
 
-    return { html: sanitised, blocked: blockedCount };
+    return { html: sanitised, blocked: allowRemoteImages ? 0 : blockedCount };
 }

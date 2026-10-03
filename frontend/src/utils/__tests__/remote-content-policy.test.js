@@ -119,3 +119,33 @@ describe('危險導航協議', () => {
         expect(node.hasAttribute('href')).toBe(false);
     });
 });
+
+describe('允許遠端圖片時仍必須清洗', () => {
+    it('放行遠端圖片與連結，且不計入阻斷', () => {
+        const r = blockRemoteContent(`<img src="${T}"><a href="${T}">open</a>`, {
+            allowRemoteImages: true,
+        });
+        expect(r.blocked).toBe(0);
+        expect(r.html).toContain(T);
+    });
+
+    it.each([
+        ['img onerror', '<img src="x" onerror="alert(1)">'],
+        ['svg onload', '<svg onload="alert(1)"></svg>'],
+        ['body onload', '<p>hi</p><script>alert(1)</script>'],
+        ['iframe', '<iframe src="https://evil.example/"></iframe>'],
+        ['a javascript', '<a href="javascript:alert(1)">x</a>'],
+    ])('仍移除 %s', (_name, html) => {
+        const r = blockRemoteContent(html, { allowRemoteImages: true });
+        const host = document.createElement('div');
+        host.innerHTML = r.html;
+        for (const el of host.querySelectorAll('*')) {
+            for (const a of el.attributes) {
+                expect(a.name.toLowerCase().startsWith('on')).toBe(false);
+                expect(/javascript:/i.test(a.value)).toBe(false);
+            }
+        }
+        expect(host.querySelector('script')).toBeNull();
+        expect(host.querySelector('iframe')).toBeNull();
+    });
+});
