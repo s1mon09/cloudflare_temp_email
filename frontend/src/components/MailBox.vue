@@ -255,6 +255,7 @@ watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
 })
 
 const refresh = async () => {
+  const previousMailId = curMail.value?.id;
   try {
     const { results, count: totalCount } = await props.fetchMailData(
       pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
@@ -266,13 +267,15 @@ const refresh = async () => {
     }));
     handleNewMailNotification(!notifyPrimed);
     notifyPrimed = true;
-    if (totalCount > 0) {
+    if (typeof totalCount === 'number') {
       count.value = totalCount;
     }
-    curMail.value = null;
-    if (!isMobile.value && !mailListView.value && data.value.length > 0) {
-      curMail.value = data.value[0];
-    }
+    // 保留用户正在阅读的邮件，避免刷新时被强制跳回最新一封
+    const stillListed = previousMailId == null
+      ? null
+      : data.value.find((mail) => mail.id === previousMailId) || null;
+    curMail.value = stillListed
+      || ((!isMobile.value && !mailListView.value && data.value.length > 0) ? data.value[0] : null);
   } catch (error) {
     message.error(error.message || "error");
     console.error(error);
@@ -282,8 +285,12 @@ const refresh = async () => {
 };
 
 const backFirstPageAndRefresh = async () => {
-  page.value = 1;
-  await refresh();
+  if (page.value === 1) {
+    await refresh();
+  } else {
+    // 切回第一页会触发分页监听刷新，避免重复请求
+    page.value = 1;
+  }
 }
 
 watch(searchKeyword, () => {

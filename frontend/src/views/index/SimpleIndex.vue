@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useScopedI18n } from '@/i18n/app'
 import { useMessage } from 'naive-ui'
 import {
@@ -52,7 +52,7 @@ const fetchMails = async () => {
     if (!settings.value.address) return
     try {
         const { results, count } = await api.fetch(`/api/mails?limit=1&offset=${currentPage.value - 1}`)
-        totalCount.value = count > 0 ? count : totalCount.value;
+        if (typeof count === 'number') totalCount.value = count;
         const rawMail = results && results.length > 0 ? results[0] : null
         currentMail.value = rawMail ? await processItem(rawMail) : null
     } catch (error) {
@@ -111,21 +111,16 @@ const canGoNext = computed(() => currentPage.value < totalPages.value)
 const isFirstPage = computed(() => currentPage.value === 1)
 
 const prevPage = async () => {
-    if (canGoPrev.value) {
-        currentPage.value--
-    }
+    if (!canGoPrev.value) return
+    currentPage.value--
+    await fetchMails()
 }
 
 const nextPage = async () => {
-    if (canGoNext.value) {
-        currentPage.value++
-    }
+    if (!canGoNext.value) return
+    currentPage.value++
+    await fetchMails()
 }
-
-// 监听页面变化
-watch(currentPage, () => {
-    fetchMails()
-})
 
 onMounted(async () => {
     await api.getSettings()
@@ -133,6 +128,8 @@ onMounted(async () => {
 
     // 启动自动刷新
     timer.value = setInterval(async () => {
+        // 页面不可见时不刷新，避免无谓请求；回到页面后倒计时继续
+        if (document.hidden) return
         if (!isFirstPage.value) {
             currentAutoRefreshInterval.value = 60
             return
