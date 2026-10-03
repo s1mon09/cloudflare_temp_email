@@ -4,6 +4,7 @@ import { AdminWebhookSettings, WebhookSettings, RawMailRow } from "../models";
 import { commonParseMail, sendWebhook } from "../common";
 import { resolveRawEmail } from "../gzip";
 import { getWebhookAttachments } from '../utils/webhook';
+import { isWebhookUrlAllowed } from "../utils";
 import i18n from "../i18n";
 
 
@@ -29,6 +30,10 @@ async function saveWebhookSettings(c: Context<HonoCustomType>): Promise<Response
         return c.text(msgs.WebhookNotAllowedForUserMsg, 403);
     }
     const settings = await c.req.json<WebhookSettings>();
+    // SSRF 防护：保存时就拒绝内网/非 http(s) 的目标地址
+    if (settings?.url && !isWebhookUrlAllowed(settings.url)) {
+        return c.text('Webhook url is not allowed', 400);
+    }
     await c.env.KV.put(
         `${CONSTANTS.WEBHOOK_KV_USER_SETTINGS_KEY}:${address}`,
         JSON.stringify(settings));

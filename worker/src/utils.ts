@@ -397,6 +397,64 @@ export const hashPassword = async (password: string): Promise<string> => {
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * SSRF 防护：webhook 目标地址只允许公网 http/https。
+ * Workers 内无法做 DNS 解析，故对字面量 IP、localhost 与内网域名做黑名单拦截，
+ * 对无法证明安全的目标一律拒绝（fail closed）。
+ */
+const BLOCKED_WEBHOOK_HOSTS = new Set([
+    'localhost', 'metadata', 'metadata.google.internal', 'metadata.goog',
+]);
+
+const isPrivateIpv4 = (host: string): boolean => {
+    const match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (!match) {
+        return false;
+    }
+    const parts = match.slice(1).map((part) => Number(part));
+    if (parts.some((part) => part > 255)) {
+        // 非法 IP，按不安全处理
+        return true;
+    }
+    const [a, b] = parts;
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 169 && b === 254) return true;            // link-local / 云元数据
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    return false;
+};
+
+export const isWebhookUrlAllowed = (value: string): boolean => {
+    if (typeof value !== 'string' || !value.trim()) {
+        return false;
+    }
+    let url: URL;
+    try {
+        url = new URL(value);
+    } catch (e) {
+        return false;
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return false;
+    }
+    if (url.username || url.password) {
+        return false;
+    }
+    const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+    if (!host) return false;
+    if (BLOCKED_WEBHOOK_HOSTS.has(host)) return false;
+    if (host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
+    if (isPrivateIpv4(host)) return false;
+    if (host.includes(':')) {
+        // IPv6 字面量：拦截回环/链路本地/唯一本地/IPv4 映射
+        if (host === '::1' || host === '::') return false;
+        if (/^f[cd]/.test(host)) return false;      // fc00::/7
+        if (/^fe80/.test(host)) return false;        // fe80::/10
+        if (/^::ffff:/.test(host)) return false;     // IPv4 映射地址
+    }
+    return true;
+};
+
 export const getMaxAddressCount = async (
     c: Context<HonoCustomType>,
     userRole: string | null | undefined,
@@ -464,6 +522,7 @@ export default {
     isGlobalTurnstileEnabled,
     checkCfTurnstile,
     checkUserPassword,
+    isWebhookUrlAllowed,
     getJsonSetting,
     getJsonValue: getJsonObjectValue,
     getStringList: getStringArray

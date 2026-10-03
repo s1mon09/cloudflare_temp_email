@@ -104,7 +104,8 @@ const copyToClipboard = async () => {
 
 const openLink = () => {
   if (isLink.value && aiExtract.value.result) {
-    window.open(aiExtract.value.result, '_blank');
+    // noopener/noreferrer：避免被打开的页面通过 window.opener 反向控制本页
+    window.open(aiExtract.value.result, '_blank', 'noopener,noreferrer');
   }
 };
 </script>

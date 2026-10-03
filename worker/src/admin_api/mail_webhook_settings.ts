@@ -5,6 +5,7 @@ import { commonParseMail, sendWebhook } from "../common";
 import { resolveRawEmail } from "../gzip";
 import i18n from "../i18n";
 import { getWebhookAttachments } from '../utils/webhook';
+import { isWebhookUrlAllowed } from "../utils";
 
 async function getWebhookSettings(c: Context<HonoCustomType>): Promise<Response> {
     const settings = await c.env.KV.get<WebhookSettings>(
@@ -15,6 +16,10 @@ async function getWebhookSettings(c: Context<HonoCustomType>): Promise<Response>
 
 async function saveWebhookSettings(c: Context<HonoCustomType>): Promise<Response> {
     const settings = await c.req.json<WebhookSettings>();
+    // SSRF 防护：保存时就拒绝内网/非 http(s) 的目标地址
+    if (settings?.url && !isWebhookUrlAllowed(settings.url)) {
+        return c.text('Webhook url is not allowed', 400);
+    }
     await c.env.KV.put(
         CONSTANTS.WEBHOOK_KV_ADMIN_MAIL_SETTINGS_KEY,
         JSON.stringify(settings));

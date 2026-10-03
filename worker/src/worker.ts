@@ -35,7 +35,8 @@ app.use('/*', cors());
 // error handler
 app.onError((err, c) => {
 	console.error(err)
-	return c.json({ code: ErrorCode.INTERNAL_SERVER_ERROR, message: `${err.name} ${err.message}` }, 500)
+	// 只回显通用错误，避免把内部错误信息（栈、SQL、配置细节）泄露给客户端
+	return c.json({ code: ErrorCode.INTERNAL_SERVER_ERROR, message: 'Internal Server Error' }, 500)
 })
 // global middlewares
 app.use('/*', async (c, next) => {
@@ -67,10 +68,16 @@ app.use('/*', async (c, next) => {
 	}
 
 	// rate limit for specific endpoints
+	// 登录类接口（站点口令 / 管理员口令 / 地址口令）同样纳入限流，
+	// 否则可被无限制撞库；/open_api/* 还被排除在站点口令之外，更需要限流兜底。
 	if (
 		c.req.path.startsWith("/api/new_address")
 		|| c.req.path.startsWith("/api/send_mail")
+		|| c.req.path.startsWith("/api/address_login")
 		|| c.req.path.startsWith("/external/api/send_mail")
+		|| c.req.path.startsWith("/open_api/site_login")
+		|| c.req.path.startsWith("/open_api/admin_login")
+		|| c.req.path.startsWith("/open_api/credential_login")
 		|| (c.req.path.startsWith("/user_api/address/") && c.req.path.endsWith("/send_mail"))
 		|| c.req.path.startsWith("/user_api/register")
 		|| c.req.path.startsWith("/user_api/verify_code")
