@@ -11,4 +11,14 @@ Disallow: /redeem/
 Disallow: /telegram_mail
 Disallow: /telegram_mail/
 
+# 各语言前缀下的私有页面
+Disallow: /*/admin
+Disallow: /*/admin/
+Disallow: /*/user
+Disallow: /*/user/
+Disallow: /*/redeem
+Disallow: /*/redeem/
+Disallow: /*/telegram_mail
+Disallow: /*/telegram_mail/
+
 Sitemap: https://mail.kodao.site/sitemap.xml

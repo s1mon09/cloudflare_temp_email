@@ -12,6 +12,23 @@ import wasm from "vite-plugin-wasm";
 export default defineConfig({
   build: {
     outDir: './dist',
+    rollupOptions: {
+      output: {
+        // 按依赖拆分 vendor，改善缓存命中与并行加载；
+        // 仅按已进入依赖图的模块归类，避免把整包（如 naive-ui）强制打入初始包。
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('node_modules/naive-ui/')) return 'vendor-naive'
+          if (id.includes('node_modules/@vueuse/')) return 'vendor-vueuse'
+          if (id.includes('node_modules/@unhead/')) return 'vendor-unhead'
+          if (id.includes('node_modules/@fingerprintjs/')) return 'vendor-fingerprint'
+          if (/node_modules\/(vue|vue-router|vue-i18n|pinia|@vue|@intlify)\//.test(id)) {
+            return 'vendor-vue'
+          }
+          return undefined
+        },
+      },
+    },
   },
   plugins: [
     vue(),

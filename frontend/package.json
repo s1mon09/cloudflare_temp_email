@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build -m prod --emptyOutDir",
+    "build": "vite build -m prod --emptyOutDir && node scripts/gen-locale-pages.mjs",
+    "seo:locales": "node scripts/gen-locale-pages.mjs",
+    "seo:indexnow": "node scripts/indexnow.mjs",
     "build:release": "vite build -m example --emptyOutDir",
     "build:pages": "vite build -m pages --emptyOutDir",
     "build:pages:nopwa": "VITE_PWA_DISABLED=true vite build -m pages --emptyOutDir",

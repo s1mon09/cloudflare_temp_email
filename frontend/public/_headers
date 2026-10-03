@@ -15,3 +15,21 @@
   X-Robots-Tag: noindex, nofollow
 /telegram_mail/*
   X-Robots-Tag: noindex, nofollow
+
+# 各语言前缀（如 /en/user）下的私有页面同样禁止收录
+/*/admin
+  X-Robots-Tag: noindex, nofollow
+/*/admin/*
+  X-Robots-Tag: noindex, nofollow
+/*/user
+  X-Robots-Tag: noindex, nofollow
+/*/user/*
+  X-Robots-Tag: noindex, nofollow
+/*/redeem
+  X-Robots-Tag: noindex, nofollow
+/*/redeem/*
+  X-Robots-Tag: noindex, nofollow
+/*/telegram_mail
+  X-Robots-Tag: noindex, nofollow
+/*/telegram_mail/*
+  X-Robots-Tag: noindex, nofollow
