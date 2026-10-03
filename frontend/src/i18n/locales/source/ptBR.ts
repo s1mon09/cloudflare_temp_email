@@ -687,5 +687,6 @@ export const ptBRMessages = {
   "components.MailBox.notifyWithCode": "Código de verificação: {code}",
   "components.MailBox.timeJustNow": "Agora mesmo",
   "components.MailBox.timeMinutesAgo": "há {count} min",
-  "components.MailBox.timeHoursAgo": "há {count} h"
+  "components.MailBox.timeHoursAgo": "há {count} h",
+  "views.index.SimpleIndex.copied": "Copiado"
 }

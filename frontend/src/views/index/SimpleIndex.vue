@@ -5,6 +5,7 @@ import { useMessage } from 'naive-ui'
 import {
     ExitToAppFilled,
     ContentCopyFilled,
+    CheckFilled,
     RefreshFilled,
     ArrowBackIosNewFilled,
     ArrowForwardIosFilled,
@@ -32,11 +33,15 @@ const timer = ref(null)
 
 const { t } = useScopedI18n('views.index.SimpleIndex')
 
-// 复制地址
+// 复制地址；成功后按钮原地显示「已复制」，避免弹窗打扰
+const addressCopied = ref(false)
+let addressCopiedTimer = null
 const copyAddress = async () => {
     try {
         await navigator.clipboard.writeText(settings.value.address)
-        message.success(t('addressCopied'))
+        addressCopied.value = true
+        clearTimeout(addressCopiedTimer)
+        addressCopiedTimer = setTimeout(() => { addressCopied.value = false }, 1500)
     } catch (error) {
         message.error(t('copyFailed'))
     }
@@ -81,21 +86,21 @@ const deleteMail = async () => {
         await api.fetch(`/api/mails/${currentMail.value.id}`, { method: 'DELETE' });
         message.success(t('deleteSuccess'));
         currentMail.value = null;
-        await refreshMails();
+        await refreshMails({ silent: true });
     } catch (error) {
         console.error('Failed to delete mail:', error);
         message.error(t('deleteFailed'));
     }
 }
 
-// 刷新邮件
-const refreshMails = async () => {
+// 刷新邮件；silent 用于自动刷新/删除后的刷新，避免重复提示打扰
+const refreshMails = async ({ silent = false } = {}) => {
     if (loading.value) return
     currentPage.value = 1
-    showAccountSettingsCard.value = false
     currentAutoRefreshInterval.value = 60
+    if (!silent) showAccountSettingsCard.value = false
     await fetchMails()
-    message.success(t('refreshSuccess'))
+    if (!silent) message.success(t('refreshSuccess'))
 }
 
 // 分页控制
@@ -134,13 +139,14 @@ onMounted(async () => {
         }
 
         if (--currentAutoRefreshInterval.value <= 0) {
-            await refreshMails()
+            await refreshMails({ silent: true })
         }
     }, 1000)
 })
 
 onBeforeUnmount(() => {
     clearInterval(timer.value)
+    clearTimeout(addressCopiedTimer)
 })
 </script>
 
@@ -158,7 +164,7 @@ onBeforeUnmount(() => {
                     <AddressSelect :showCopy="false" size="small" />
                 </div>
                 <n-flex justify="center">
-                    <n-button @click="refreshMails" :loading="loading" type="primary" tertiary size="small">
+                    <n-button @click="refreshMails()" :loading="loading" type="primary" tertiary size="small">
                         <template #icon>
                             <n-icon>
                                 <RefreshFilled />
@@ -166,13 +172,14 @@ onBeforeUnmount(() => {
                         </template>
                         {{ t('refreshMails') }}
                     </n-button>
-                    <n-button @click="copyAddress" tertiary size="small">
+                    <n-button @click="copyAddress" :type="addressCopied ? 'success' : 'default'" tertiary size="small">
                         <template #icon>
                             <n-icon>
-                                <ContentCopyFilled />
+                                <CheckFilled v-if="addressCopied" />
+                                <ContentCopyFilled v-else />
                             </n-icon>
                         </template>
-                        {{ t('copyAddress') }}
+                        {{ addressCopied ? t('copied') : t('copyAddress') }}
                     </n-button>
                     <n-button @click="useSimpleIndex = false" tertiary size="small">
                         <template #icon>

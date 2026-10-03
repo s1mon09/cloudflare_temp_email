@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { useScopedI18n } from '@/i18n/app'
 import { useMessage } from 'naive-ui'
 import useClipboard from 'vue-clipboard3'
-import { Copy } from '@vicons/fa'
+import { Copy, Check } from '@vicons/fa'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
@@ -194,10 +194,15 @@ const onAddressChange = async (value) => {
     }
 }
 
+// 复制成功后在按钮上原地显示「已复制」，避免弹窗打扰
+const copied = ref(false)
+let copiedTimer = null
 const copy = async () => {
     try {
         await toClipboard(settings.value.address)
-        message.success(t('copied'));
+        copied.value = true
+        clearTimeout(copiedTimer)
+        copiedTimer = setTimeout(() => { copied.value = false }, 1500)
     } catch (e) {
         message.error(e.message || "error");
     }
@@ -206,6 +211,10 @@ const copy = async () => {
 onMounted(async () => {
     await refreshAddressOptions();
 });
+
+onBeforeUnmount(() => {
+    clearTimeout(copiedTimer)
+})
 
 watch([userJwt, isTelegram, () => settings.value.address], async () => {
     await refreshAddressOptions();
@@ -218,8 +227,9 @@ watch([userJwt, isTelegram, () => settings.value.address], async () => {
             :loading="addressLoading" :placeholder="t('selectMailbox')" @update:value="onAddressChange"
             class="address-select" />
         <slot name="actions" />
-        <n-button v-if="showCopy" class="address-copy" @click="copy" :size="size" tertiary type="primary">
-            <n-icon :component="Copy" /> {{ t('copy') }}
+        <n-button v-if="showCopy" class="address-copy" @click="copy" :size="size" tertiary
+            :type="copied ? 'success' : 'primary'">
+            <n-icon :component="copied ? Check : Copy" /> {{ copied ? t('copied') : t('copy') }}
         </n-button>
     </n-flex>
 </template>

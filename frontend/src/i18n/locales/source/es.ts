@@ -687,5 +687,6 @@ export const esMessages = {
   "components.MailBox.notifyWithCode": "Código de verificación: {code}",
   "components.MailBox.timeJustNow": "Ahora mismo",
   "components.MailBox.timeMinutesAgo": "hace {count} min",
-  "components.MailBox.timeHoursAgo": "hace {count} h"
+  "components.MailBox.timeHoursAgo": "hace {count} h",
+  "views.index.SimpleIndex.copied": "Copiado"
 }

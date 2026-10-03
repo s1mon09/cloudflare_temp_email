@@ -1433,6 +1433,10 @@ export const MESSAGE_REGISTRY = {
       "en": "Copy",
       "zh": "复制"
     },
+    "copied": {
+      "en": "Copied",
+      "zh": "已复制"
+    },
     "copyFailed": {
       "en": "Copy failed",
       "zh": "复制失败"

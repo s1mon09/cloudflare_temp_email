@@ -687,5 +687,6 @@ export const jaMessages = {
   "components.MailBox.notifyWithCode": "認証コード: {code}",
   "components.MailBox.timeJustNow": "たった今",
   "components.MailBox.timeMinutesAgo": "{count} 分前",
-  "components.MailBox.timeHoursAgo": "{count} 時間前"
+  "components.MailBox.timeHoursAgo": "{count} 時間前",
+  "views.index.SimpleIndex.copied": "コピーしました"
 }

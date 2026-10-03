@@ -687,5 +687,6 @@ export const deMessages = {
   "components.MailBox.notifyWithCode": "Bestätigungscode: {code}",
   "components.MailBox.timeJustNow": "Gerade eben",
   "components.MailBox.timeMinutesAgo": "vor {count} Min.",
-  "components.MailBox.timeHoursAgo": "vor {count} Std."
+  "components.MailBox.timeHoursAgo": "vor {count} Std.",
+  "views.index.SimpleIndex.copied": "Kopiert"
 }
