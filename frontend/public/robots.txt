@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# 私有 / 无索引价值的页面不抓取
+Disallow: /admin
+Disallow: /admin/
+Disallow: /user
+Disallow: /user/
+Disallow: /redeem
+Disallow: /redeem/
+Disallow: /telegram_mail
+Disallow: /telegram_mail/
+
+Sitemap: https://mail.kodao.site/sitemap.xml

@@ -1,0 +1,17 @@
+# 私有页面禁止搜索引擎收录（SPA 路由由 index.html 承载，需按路径打标）
+/admin
+  X-Robots-Tag: noindex, nofollow
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+/user
+  X-Robots-Tag: noindex, nofollow
+/user/*
+  X-Robots-Tag: noindex, nofollow
+/redeem
+  X-Robots-Tag: noindex, nofollow
+/redeem/*
+  X-Robots-Tag: noindex, nofollow
+/telegram_mail
+  X-Robots-Tag: noindex, nofollow
+/telegram_mail/*
+  X-Robots-Tag: noindex, nofollow
