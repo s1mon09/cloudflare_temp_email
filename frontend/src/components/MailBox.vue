@@ -3,7 +3,7 @@ import { watch, onMounted, ref, onBeforeUnmount, computed } from "vue";
 import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
-import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound } from '@vicons/material'
+import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, ContentCopyOutlined } from '@vicons/material'
 import { useIsMobile } from '../utils/composables'
 import { processItem } from '../utils/email-parser'
 import { utcToLocalDate } from '../utils';
@@ -235,6 +235,29 @@ watch(searchKeyword, () => {
   }, 300)
 })
 
+// Latest verification code among the loaded mails, for one-click copy.
+const latestCode = computed(() => {
+  for (const mail of rawData.value) {
+    if (!mail.metadata) continue
+    try {
+      const extract = JSON.parse(mail.metadata)?.ai_extract
+      if (extract?.type === 'auth_code' && extract.result) return extract.result
+    } catch (e) {
+      // ignore malformed metadata
+    }
+  }
+  return ''
+})
+
+const copyLatestCode = async () => {
+  try {
+    await navigator.clipboard.writeText(latestCode.value)
+    message.success(t('copySuccess'))
+  } catch (e) {
+    message.error(t('copyFailed'))
+  }
+}
+
 const clickRow = (row) => {
   if (multiActionMode.value) {
     row.checked = !row.checked;
@@ -370,6 +393,16 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
+    <div v-if="latestCode" class="latest-code-bar">
+      <span class="latest-code-bar__label">{{ t('latestCode') }}</span>
+      <span class="latest-code-bar__value">{{ latestCode }}</span>
+      <n-button size="small" type="primary" @click="copyLatestCode">
+        <template #icon>
+          <n-icon :component="ContentCopyOutlined" />
+        </template>
+        {{ t('copyCode') }}
+      </n-button>
+    </div>
     <div v-if="!isMobile" class="left">
       <div style="margin-bottom: 10px;">
         <n-space v-if="multiActionMode" align="center">
@@ -631,6 +664,28 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.latest-code-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--n-border-color);
+  border-radius: var(--n-border-radius);
+  background: rgba(24, 160, 88, 0.08);
+}
+
+.latest-code-bar__label {
+  color: var(--n-text-color-3);
+}
+
+.latest-code-bar__value {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--n-text-color);
+}
 .left {
   text-align: left;
 }

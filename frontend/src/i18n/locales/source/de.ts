@@ -675,5 +675,9 @@ export const deMessages = {
   "views.index.SimpleIndex.deleteFailed": "E-Mail konnte nicht gelöscht werden",
   "views.index.SimpleIndex.fetchMailsFailed": "E-Mails konnten nicht geladen werden",
   "views.admin.Maintenance.cleanupConfirm": "Möchtest du diese Bereinigung jetzt wirklich ausführen? Gelöschte Daten können nicht wiederhergestellt werden.",
-  "views.common.Appearance.autoLoadRemoteImages": "Externe Bilder im E-Mail-Inhalt automatisch laden"
+  "views.common.Appearance.autoLoadRemoteImages": "Externe Bilder im E-Mail-Inhalt automatisch laden",
+  "components.MailBox.copyCode": "Code kopieren",
+  "components.MailBox.copyFailed": "Kopieren fehlgeschlagen",
+  "components.MailBox.copySuccess": "Kopiert",
+  "components.MailBox.latestCode": "Neuester Code"
 }

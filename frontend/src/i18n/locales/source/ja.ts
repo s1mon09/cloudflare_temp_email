@@ -675,5 +675,9 @@ export const jaMessages = {
   "views.index.SimpleIndex.deleteFailed": "メールの削除に失敗しました",
   "views.index.SimpleIndex.fetchMailsFailed": "メールの取得に失敗しました",
   "views.admin.Maintenance.cleanupConfirm": "このクリーンアップを今すぐ実行しますか？削除されたデータは復元できません。",
-  "views.common.Appearance.autoLoadRemoteImages": "メール本文の外部画像を自動的に読み込む"
+  "views.common.Appearance.autoLoadRemoteImages": "メール本文の外部画像を自動的に読み込む",
+  "components.MailBox.copyCode": "コードをコピー",
+  "components.MailBox.copyFailed": "コピーに失敗しました",
+  "components.MailBox.copySuccess": "コピーしました",
+  "components.MailBox.latestCode": "最新のコード"
 }

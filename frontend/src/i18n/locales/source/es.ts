@@ -675,5 +675,9 @@ export const esMessages = {
   "views.index.SimpleIndex.deleteFailed": "No se pudo eliminar el correo",
   "views.index.SimpleIndex.fetchMailsFailed": "No se pudieron cargar los correos",
   "views.admin.Maintenance.cleanupConfirm": "¿Seguro que quieres ejecutar esta limpieza ahora? Los datos eliminados no se pueden recuperar.",
-  "views.common.Appearance.autoLoadRemoteImages": "Cargar automáticamente las imágenes externas del correo"
+  "views.common.Appearance.autoLoadRemoteImages": "Cargar automáticamente las imágenes externas del correo",
+  "components.MailBox.copyCode": "Copiar código",
+  "components.MailBox.copyFailed": "Error al copiar",
+  "components.MailBox.copySuccess": "Copiado",
+  "components.MailBox.latestCode": "Último código"
 }

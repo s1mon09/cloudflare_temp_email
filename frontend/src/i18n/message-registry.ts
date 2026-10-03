@@ -134,6 +134,22 @@ export const MESSAGE_REGISTRY = {
     "unselectAll": {
       "en": "Unselect All",
       "zh": "取消全选"
+    },
+    "copyCode": {
+      "en": "Copy code",
+      "zh": "复制验证码"
+    },
+    "copyFailed": {
+      "en": "Copy failed",
+      "zh": "复制失败"
+    },
+    "copySuccess": {
+      "en": "Copied",
+      "zh": "已复制"
+    },
+    "latestCode": {
+      "en": "Latest code",
+      "zh": "最新验证码"
     }
   },
   "components.AiExtractInfo": {

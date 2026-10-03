@@ -675,5 +675,9 @@ export const ptBRMessages = {
   "views.index.SimpleIndex.deleteFailed": "Falha ao excluir o e-mail",
   "views.index.SimpleIndex.fetchMailsFailed": "Falha ao carregar os e-mails",
   "views.admin.Maintenance.cleanupConfirm": "Tem certeza de que deseja executar esta limpeza agora? Os dados excluídos não podem ser recuperados.",
-  "views.common.Appearance.autoLoadRemoteImages": "Carregar automaticamente imagens externas no corpo do e-mail"
+  "views.common.Appearance.autoLoadRemoteImages": "Carregar automaticamente imagens externas no corpo do e-mail",
+  "components.MailBox.copyCode": "Copiar código",
+  "components.MailBox.copyFailed": "Falha ao copiar",
+  "components.MailBox.copySuccess": "Copiado",
+  "components.MailBox.latestCode": "Código mais recente"
 }
