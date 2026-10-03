@@ -684,5 +684,8 @@ export const esMessages = {
   "components.MailBox.notifyFailed": "No se pudieron activar las notificaciones",
   "components.MailBox.notifyNewMail": "Nuevo correo recibido",
   "components.MailBox.notifyNewMails": "Se recibieron {count} correos nuevos",
-  "components.MailBox.notifyWithCode": "Código de verificación: {code}"
+  "components.MailBox.notifyWithCode": "Código de verificación: {code}",
+  "components.MailBox.timeJustNow": "Ahora mismo",
+  "components.MailBox.timeMinutesAgo": "hace {count} min",
+  "components.MailBox.timeHoursAgo": "hace {count} h"
 }

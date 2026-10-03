@@ -684,5 +684,8 @@ export const deMessages = {
   "components.MailBox.notifyFailed": "Benachrichtigungen konnten nicht aktiviert werden",
   "components.MailBox.notifyNewMail": "Neue E-Mail erhalten",
   "components.MailBox.notifyNewMails": "{count} neue E-Mails erhalten",
-  "components.MailBox.notifyWithCode": "Bestätigungscode: {code}"
+  "components.MailBox.notifyWithCode": "Bestätigungscode: {code}",
+  "components.MailBox.timeJustNow": "Gerade eben",
+  "components.MailBox.timeMinutesAgo": "vor {count} Min.",
+  "components.MailBox.timeHoursAgo": "vor {count} Std."
 }

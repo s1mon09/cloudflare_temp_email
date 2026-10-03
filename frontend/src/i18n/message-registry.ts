@@ -170,6 +170,18 @@ export const MESSAGE_REGISTRY = {
     "notifyWithCode": {
       "en": "Verification code: {code}",
       "zh": "验证码：{code}"
+    },
+    "timeJustNow": {
+      "en": "Just now",
+      "zh": "刚刚"
+    },
+    "timeMinutesAgo": {
+      "en": "{count} min ago",
+      "zh": "{count} 分钟前"
+    },
+    "timeHoursAgo": {
+      "en": "{count} h ago",
+      "zh": "{count} 小时前"
     }
   },
   "components.AiExtractInfo": {

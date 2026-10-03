@@ -321,6 +321,21 @@ const copyLatestCode = async () => {
   }
 }
 
+// Show a friendly relative time for recent mails, fall back to the absolute
+// local time for anything older than a day.
+const formatMailTime = (utcDate) => {
+  if (!utcDate) return ''
+  const date = new Date(`${utcDate} UTC`)
+  if (isNaN(date.getTime())) return utcToLocalDate(utcDate, useUTCDate.value)
+  const diff = Date.now() - date.getTime()
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  if (diff >= 0 && diff < minute) return t('timeJustNow')
+  if (diff >= 0 && diff < hour) return t('timeMinutesAgo', { count: Math.floor(diff / minute) })
+  if (diff >= 0 && diff < 24 * hour) return t('timeHoursAgo', { count: Math.floor(diff / hour) })
+  return utcToLocalDate(utcDate, useUTCDate.value)
+}
+
 const clickRow = (row) => {
   if (multiActionMode.value) {
     row.checked = !row.checked;
@@ -541,7 +556,7 @@ onBeforeUnmount(() => {
                       ID: {{ row.id }}
                     </n-tag>
                     <n-tag type="info">
-                      {{ utcToLocalDate(row.created_at, useUTCDate) }}
+                      {{ formatMailTime(row.created_at) }}
                     </n-tag>
                     <n-tag type="info">
                       <n-ellipsis style="max-width: 240px;">
@@ -626,7 +641,7 @@ onBeforeUnmount(() => {
                     ID: {{ row.id }}
                   </n-tag>
                   <n-tag type="info">
-                    {{ utcToLocalDate(row.created_at, useUTCDate) }}
+                    {{ formatMailTime(row.created_at) }}
                   </n-tag>
                   <n-tag type="info">
                     <n-ellipsis class="mail-list-meta-text">
@@ -679,7 +694,7 @@ onBeforeUnmount(() => {
                   ID: {{ row.id }}
                 </n-tag>
                 <n-tag type="info">
-                  {{ utcToLocalDate(row.created_at, useUTCDate) }}
+                  {{ formatMailTime(row.created_at) }}
                 </n-tag>
                 <n-tag type="info">
                   <n-ellipsis style="max-width: 240px;">

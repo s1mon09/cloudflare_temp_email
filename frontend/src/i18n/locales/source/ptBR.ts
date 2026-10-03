@@ -684,5 +684,8 @@ export const ptBRMessages = {
   "components.MailBox.notifyFailed": "Falha ao ativar as notificações",
   "components.MailBox.notifyNewMail": "Novo e-mail recebido",
   "components.MailBox.notifyNewMails": "{count} novos e-mails recebidos",
-  "components.MailBox.notifyWithCode": "Código de verificação: {code}"
+  "components.MailBox.notifyWithCode": "Código de verificação: {code}",
+  "components.MailBox.timeJustNow": "Agora mesmo",
+  "components.MailBox.timeMinutesAgo": "há {count} min",
+  "components.MailBox.timeHoursAgo": "há {count} h"
 }
