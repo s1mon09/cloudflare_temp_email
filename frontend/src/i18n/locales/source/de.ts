@@ -690,6 +690,8 @@ export const deMessages = {
   "components.MailBox.notifyNewMail": "Neue E-Mail erhalten",
   "components.MailBox.notifyNewMails": "{count} neue E-Mails erhalten",
   "components.MailBox.notifyWithCode": "Bestätigungscode: {code}",
+  "components.MailBox.retry": "Erneut versuchen",
+  "components.App.offline": "Keine Internetverbindung. Einige Funktionen sind möglicherweise nicht verfügbar.",
   "components.MailBox.timeJustNow": "Gerade eben",
   "components.MailBox.timeMinutesAgo": "vor {count} Min.",
   "components.MailBox.timeHoursAgo": "vor {count} Std.",

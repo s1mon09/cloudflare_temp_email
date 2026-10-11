@@ -35,6 +35,10 @@
 - perf: |List API| Run list results, total count and unread count in parallel, merging the first-page 3 D1 round-trips into 1
 - perf: |Frontend| Add GET request deduplication in `apiFetch`, reusing a single in-flight promise for concurrent requests to the same path
 - perf: |Inbox| Pause auto-refresh polling while the tab is hidden and resume the countdown on return, avoiding idle requests from background tabs
+- feat: |Inbox| Show an in-page notice (including the verification code) when new mail arrives while the page is visible, without requiring browser notification permission
+- feat: |Global| Show an offline banner at the top when the network is down and hide it automatically on reconnect; the inbox pauses polling while offline to avoid idle requests
+- feat: |Inbox| Show an in-page error with a Retry button when the mail list fails to load, instead of only a toast with an empty list
+- style: |Inbox| Increase the mail list item tap area on touch/narrow screens to reduce mis-taps
 
 ## v1.12.0
 

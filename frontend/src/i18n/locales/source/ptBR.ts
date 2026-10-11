@@ -690,6 +690,8 @@ export const ptBRMessages = {
   "components.MailBox.notifyNewMail": "Novo e-mail recebido",
   "components.MailBox.notifyNewMails": "{count} novos e-mails recebidos",
   "components.MailBox.notifyWithCode": "Código de verificação: {code}",
+  "components.MailBox.retry": "Tentar novamente",
+  "components.App.offline": "Você está offline. Alguns recursos podem ficar indisponíveis.",
   "components.MailBox.timeJustNow": "Agora mesmo",
   "components.MailBox.timeMinutesAgo": "há {count} min",
   "components.MailBox.timeHoursAgo": "há {count} h",

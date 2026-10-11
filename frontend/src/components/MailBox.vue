@@ -79,6 +79,7 @@ const timer = ref(null)
 const count = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
+const loadError = ref(null)
 
 const mailListPreviewLineClampValue = computed(() => {
   const value = Number(mailListPreviewLineClamp.value)
@@ -204,7 +205,11 @@ const toggleNotify = async () => {
   localStorage.setItem(NOTIFY_STORAGE_KEY, '1')
 }
 
-const notifyNewMails = (mails) => {
+const newMailTitle = (mails) => mails.length > 1
+  ? t('notifyNewMails', { count: mails.length })
+  : t('notifyNewMail')
+
+const newMailBody = (mails) => {
   const codeMail = mails.find((mail) => {
     try {
       return JSON.parse(mail.metadata)?.ai_extract?.type === 'auth_code'
@@ -212,13 +217,16 @@ const notifyNewMails = (mails) => {
       return false
     }
   })
-  const body = codeMail
+  return codeMail
     ? t('notifyWithCode', { code: JSON.parse(codeMail.metadata).ai_extract.result })
     : `${mails[0].source || ''}: ${mails[0].subject || ''}`
-  const notification = new Notification(
-    mails.length > 1 ? t('notifyNewMails', { count: mails.length }) : t('notifyNewMail'),
-    { body, tag: 'mailbox-new-mail' }
-  )
+}
+
+const notifyNewMails = (mails) => {
+  const notification = new Notification(newMailTitle(mails), {
+    body: newMailBody(mails),
+    tag: 'mailbox-new-mail'
+  })
   notification.onclick = () => {
     window.focus()
     notification.close()
@@ -226,10 +234,17 @@ const notifyNewMails = (mails) => {
 }
 
 const handleNewMailNotification = (isFirstLoad) => {
-  if (!isFirstLoad && notifyEnabled.value && document.hidden
-    && !searchKeyword.value && page.value === 1) {
+  if (!isFirstLoad && !searchKeyword.value && page.value === 1) {
     const fresh = rawData.value.filter((mail) => !notifyTrackedIds.has(mail.id))
-    if (fresh.length > 0) notifyNewMails(fresh)
+    if (fresh.length > 0) {
+      if (document.hidden) {
+        // 后台标签页：使用系统通知
+        if (notifyEnabled.value) notifyNewMails(fresh)
+      } else {
+        // 页面可见：给页内提示，方便用户盯着等待验证码
+        message.success(`${newMailTitle(fresh)} · ${newMailBody(fresh)}`, { duration: 5000 })
+      }
+    }
   }
   notifyTrackedIds = new Set(rawData.value.map((mail) => mail.id))
 }
@@ -243,8 +258,9 @@ const setupAutoRefresh = async (autoRefresh) => {
   if (autoRefresh) {
     clearInterval(timer.value);
     timer.value = setInterval(async () => {
-      // 页面不可见时暂停轮询，避免后台标签页空转请求；回到页面后倒计时继续
+      // 页面不可见或断网时暂停轮询，避免空转请求；恢复后倒计时继续
       if (document.hidden) return;
+      if (typeof navigator !== 'undefined' && !navigator.onLine) return;
       if (loading.value) return;
       autoRefreshInterval.value--;
       if (autoRefreshInterval.value <= 0) {
@@ -275,6 +291,7 @@ const refresh = async () => {
       pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
     );
     loading.value = true;
+    loadError.value = null;
     rawData.value = await Promise.all(results.map(async (item) => {
       item.checked = false;
       return await processItem(item);
@@ -294,7 +311,8 @@ const refresh = async () => {
     curMail.value = stillListed
       || ((!isMobile.value && !mailListView.value && data.value.length > 0) ? data.value[0] : null);
   } catch (error) {
-    message.error(error.message || "error");
+    // 页内展示错误并提供重试，避免只弹 toast 后列表空白
+    loadError.value = error.message || "error";
     console.error(error);
   } finally {
     loading.value = false;
@@ -497,6 +515,14 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
+    <n-alert v-if="loadError" type="error" style="margin-bottom: 10px;">
+      {{ loadError }}
+      <template #action>
+        <n-button size="small" tertiary type="primary" @click="backFirstPageAndRefresh">
+          {{ t('retry') }}
+        </n-button>
+      </template>
+    </n-alert>
     <div v-if="latestCode" class="latest-code-bar">
       <span class="latest-code-bar__label">{{ t('latestCode') }}</span>
       <span class="latest-code-bar__value">{{ latestCode }}</span>
@@ -913,5 +939,14 @@ pre {
 
 .split-handle:hover .split-handle__grip {
   background-color: var(--n-resize-trigger-color-hover);
+}
+
+/* 触屏窄屏：增大邮件列表项点击区域，降低误触 */
+@media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+  .mail-list-scroll :deep(.n-list-item),
+  .left :deep(.n-list-item) {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
 }
 </style>

@@ -1,4 +1,7 @@
 export const MESSAGE_REGISTRY = {
+  "components.App": {
+    "offline": { "en": "You are offline. Some features may be unavailable.", "zh": "网络已断开，部分功能可能不可用。" }
+  },
   "router": {
     "index": { "en": "Temp Email - Free Online Disposable Email & Verification Codes", "zh": "临时邮箱 Temp Email - 免费在线接收邮件与验证码" },
     "user": { "en": "User Center - Temp Email", "zh": "用户中心 - Temp Email" },
@@ -46,6 +49,7 @@ export const MESSAGE_REGISTRY = {
     }
   },
   "components.MailBox": {
+    "retry": { "en": "Retry", "zh": "重试" },
     "attachments": {
       "en": "Show Attachments",
       "zh": "查看附件"

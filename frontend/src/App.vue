@@ -2,11 +2,12 @@
 import {
   darkTheme,
 } from 'naive-ui'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
 import { useGlobalState } from './store'
 import { useIsMobile } from './utils/composables'
+import { useScopedI18n } from './i18n/app'
 import Header from './views/Header.vue';
 import Footer from './views/Footer.vue';
 import { api } from './api'
@@ -23,6 +24,12 @@ const { locale } = useI18n({ useScope: 'global' });
 const theme = computed(() => isDark.value ? darkTheme : null)
 const localeConfig = computed(() => getNaiveLocaleConfig(isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE))
 const isMobile = useIsMobile()
+const { t } = useScopedI18n('components.App')
+
+// 网络离线时在页面顶部提示，恢复联网后自动隐藏
+const isOffline = ref(typeof navigator !== 'undefined' && navigator.onLine === false)
+const handleOnline = () => { isOffline.value = false }
+const handleOffline = () => { isOffline.value = true }
 const showSideMargin = computed(() => !isMobile.value && useSideMargin.value);
 const showAd = computed(() => !isMobile.value && adClient && adSlot);
 const gridMaxCols = computed(() => showAd.value ? 8 : 12);
@@ -38,6 +45,9 @@ if (showAd.value) {
 }
 
 onMounted(async () => {
+  window.addEventListener('online', handleOnline)
+  window.addEventListener('offline', handleOffline)
+
   try {
     await api.getUserSettings();
   } catch (error) {
@@ -80,11 +90,19 @@ onMounted(async () => {
     isTelegram.value = !!window.Telegram?.WebApp?.initData;
   }
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('online', handleOnline)
+  window.removeEventListener('offline', handleOffline)
+})
 </script>
 
 <template>
   <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme">
     <n-global-style />
+    <n-alert v-if="isOffline" type="warning" :show-icon="true" style="margin: 8px;">
+      {{ t('offline') }}
+    </n-alert>
     <n-spin description="loading..." :show="loading">
       <n-notification-provider container-style="margin-top: 60px;">
         <n-message-provider container-style="margin-top: 20px;">

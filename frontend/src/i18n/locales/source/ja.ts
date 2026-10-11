@@ -690,6 +690,8 @@ export const jaMessages = {
   "components.MailBox.notifyNewMail": "新着メールを受信しました",
   "components.MailBox.notifyNewMails": "{count} 件の新着メールを受信しました",
   "components.MailBox.notifyWithCode": "認証コード: {code}",
+  "components.MailBox.retry": "再試行",
+  "components.App.offline": "オフラインです。一部の機能が利用できない可能性があります。",
   "components.MailBox.timeJustNow": "たった今",
   "components.MailBox.timeMinutesAgo": "{count} 分前",
   "components.MailBox.timeHoursAgo": "{count} 時間前",

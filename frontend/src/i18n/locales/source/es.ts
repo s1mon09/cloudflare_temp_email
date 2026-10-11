@@ -690,6 +690,8 @@ export const esMessages = {
   "components.MailBox.notifyNewMail": "Nuevo correo recibido",
   "components.MailBox.notifyNewMails": "Se recibieron {count} correos nuevos",
   "components.MailBox.notifyWithCode": "Código de verificación: {code}",
+  "components.MailBox.retry": "Reintentar",
+  "components.App.offline": "Sin conexión a Internet. Es posible que algunas funciones no estén disponibles.",
   "components.MailBox.timeJustNow": "Ahora mismo",
   "components.MailBox.timeMinutesAgo": "hace {count} min",
   "components.MailBox.timeHoursAgo": "hace {count} h",
