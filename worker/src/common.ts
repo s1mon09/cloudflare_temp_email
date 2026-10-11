@@ -683,12 +683,13 @@ export const handleListQuery = async (
     }
     const orderClause = orderBy || 'id desc';
     const resultsQuery = `${query} order by ${orderClause} limit ? offset ?`;
-    const { results } = await c.env.DB.prepare(resultsQuery).bind(
-        ...params, limit, offset
-    ).all();
-    const count = offset == 0 ? await c.env.DB.prepare(
-        countQuery
-    ).bind(...params).first("count") : 0;
+    // 结果集与总数查询彼此独立，并行执行可减少一次 D1 往返
+    const [{ results }, count] = await Promise.all([
+        c.env.DB.prepare(resultsQuery).bind(...params, limit, offset).all(),
+        offset == 0
+            ? c.env.DB.prepare(countQuery).bind(...params).first("count")
+            : Promise.resolve(0),
+    ]);
     if (hiddenFields.length === 0) {
         return c.json({ results, count });
     }
@@ -735,17 +736,18 @@ export const handleMailListQuery = async (
     if (offset == null || offset == undefined || offset < 0) return c.text(msgs.InvalidOffsetMsg, 400);
     const orderClause = orderBy || 'id desc';
     const resultsQuery = `${query} order by ${orderClause} limit ? offset ?`;
-    const { results } = await c.env.DB.prepare(resultsQuery).bind(
-        ...params, limit, offset
-    ).all();
+    // 结果集、总数与未读数彼此独立，并行执行以减少 D1 往返
+    const [{ results }, count, unreadCount] = await Promise.all([
+        c.env.DB.prepare(resultsQuery).bind(...params, limit, offset).all(),
+        offset == 0
+            ? c.env.DB.prepare(countQuery).bind(...params).first("count")
+            : Promise.resolve(0),
+        // 未读数只在第一页统计，避免翻页时重复查询
+        unread && offset == 0
+            ? c.env.DB.prepare(unread.query).bind(...unread.params).first("count")
+            : Promise.resolve(undefined),
+    ]);
     const resolvedResults = await resolveRawEmailList(results);
-    const count = offset == 0 ? await c.env.DB.prepare(
-        countQuery
-    ).bind(...params).first("count") : 0;
-    // 未读数只在第一页统计，避免翻页时重复查询
-    const unreadCount = unread && offset == 0 ? await c.env.DB.prepare(
-        unread.query
-    ).bind(...unread.params).first("count") : undefined;
     return c.json({
         results: resolvedResults, count,
         ...(unreadCount != null ? { unreadCount } : {})

@@ -32,6 +32,8 @@
 - perf: |前端| Index 页非首屏子组件（收发件箱、设置、外观、Webhook、附件、关于、简易模式）改为按需异步加载，缩小初始包体积
 - perf: |前端| 为带内容哈希的构建产物（`/assets/*`）增加一年期强缓存，并补充全站安全响应头（`X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Permissions-Policy`）
 - perf: |设置| 设置项读取增加 isolate 级内存缓存（TTL 60s，写入时立即失效），减少 D1 读取次数与接口延迟；发送限额计数等动态值不参与缓存以保证强一致
+- perf: |列表接口| 列表查询的结果集、总数与未读数改为并行执行，把首屏 3 次 D1 往返合并为 1 次
+- perf: |前端| `apiFetch` 增加 GET 请求去重，同一路径的并发请求复用同一个 in-flight Promise，避免重复请求
 - perf: |收件箱| 页面切到后台时暂停自动刷新轮询，回到前台后继续倒计时，避免隐藏标签页空转请求
 
 ## v1.12.0

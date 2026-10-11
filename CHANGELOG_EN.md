@@ -32,6 +32,8 @@
 - perf: |Frontend| Load non-first-screen Index children (send box, settings, appearance, webhook, attachment, about, simple mode) on demand to shrink the initial bundle
 - perf: |Frontend| Add one-year immutable caching for content-hashed build assets (`/assets/*`) and site-wide security headers (`X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Permissions-Policy`)
 - perf: |Settings| Add an isolate-level in-memory cache for setting reads (60s TTL, invalidated on write) to cut D1 reads and API latency; dynamic values such as send-limit counters are excluded to keep strong consistency
+- perf: |List API| Run list results, total count and unread count in parallel, merging the first-page 3 D1 round-trips into 1
+- perf: |Frontend| Add GET request deduplication in `apiFetch`, reusing a single in-flight promise for concurrent requests to the same path
 - perf: |Inbox| Pause auto-refresh polling while the tab is hidden and resume the countdown on return, avoiding idle requests from background tabs
 
 ## v1.12.0

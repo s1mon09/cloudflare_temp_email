@@ -32,7 +32,7 @@ const interceptResponse = async (path, response) => {
     return response;
 };
 
-const apiFetch = async (path, options = {}) => {
+const apiRequest = async (path, options = {}) => {
     const showLoading = options.showLoading !== false;
     if (showLoading) loading.value = true;
     try {
@@ -84,6 +84,24 @@ const apiFetch = async (path, options = {}) => {
         if (showLoading) loading.value = false;
     }
 }
+
+// GET 请求去重：同一路径的并发请求复用同一个 in-flight Promise，
+// 避免 App / Login 等多处同时触发相同接口时产生重复请求。
+const inFlightGets = new Map();
+
+const apiFetch = async (path, options = {}) => {
+    const method = (options.method || 'GET').toUpperCase();
+    if (method !== 'GET') return apiRequest(path, options);
+    // 覆盖了不同认证令牌的请求不能合并
+    const key = `${method} ${path} ${options.userJwt || ''}`;
+    const pending = inFlightGets.get(key);
+    if (pending) return pending;
+    const request = apiRequest(path, options).finally(() => {
+        if (inFlightGets.get(key) === request) inFlightGets.delete(key);
+    });
+    inFlightGets.set(key, request);
+    return request;
+};
 
 const getOpenSettings = async (message, notification) => {
     try {
