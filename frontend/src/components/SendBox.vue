@@ -41,6 +41,12 @@ const page = ref(1)
 const pageSize = ref(20)
 
 const curMail = ref(null);
+// 移动端抽屉的 show 需要布尔值；curMail 同时承载「选中邮件」与「抽屉开关」，
+// 直接绑定对象会触发 naive-ui 的 show 类型告警，这里用 computed 代理
+const showMailDrawer = computed({
+  get: () => !!curMail.value,
+  set: (val) => { if (!val) curMail.value = null; }
+});
 const showCode = ref(false)
 
 const multiActionMode = ref(false)
@@ -317,7 +323,7 @@ onMounted(async () => {
           </n-list-item>
         </n-list>
       </div>
-      <n-drawer v-model:show="curMail" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
+      <n-drawer v-model:show="showMailDrawer" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
         style="height: 80vh;">
         <n-drawer-content :title="curMail ? curMail.subject : ''" closable>
           <n-card :bordered="false" embedded style="overflow: auto;">

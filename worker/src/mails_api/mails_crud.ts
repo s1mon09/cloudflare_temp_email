@@ -13,6 +13,11 @@ const listMails = async (c: Context<HonoCustomType>) => {
     }
     const { limit, offset, keyword } = c.req.query();
     if (Number.parseInt(offset) <= 0) updateAddressUpdatedAt(c, address);
+    // 开启已读状态时，顺带返回未读数，供前端标题/favicon 角标使用
+    const unread = getBooleanValue(c.env.ENABLE_MAIL_READ_STATUS) ? {
+        query: `SELECT count(*) as count FROM raw_mails where address = ? and COALESCE(is_unread, 0) = 1`,
+        params: [address]
+    } : undefined;
     const trimmedKeyword = (keyword || '').trim();
     if (trimmedKeyword) {
         const pattern = escapeLikePattern(trimmedKeyword);
@@ -20,13 +25,13 @@ const listMails = async (c: Context<HonoCustomType>) => {
         return await handleMailListQuery(c,
             `SELECT * FROM raw_mails where ${searchClause}`,
             `SELECT count(*) as count FROM raw_mails where ${searchClause}`,
-            [address, pattern, pattern], limit, offset
+            [address, pattern, pattern], limit, offset, undefined, unread
         );
     }
     return await handleMailListQuery(c,
         `SELECT * FROM raw_mails where address = ?`,
         `SELECT count(*) as count FROM raw_mails where address = ?`,
-        [address], limit, offset
+        [address], limit, offset, undefined, unread
     );
 };
 

@@ -14,6 +14,7 @@ import {
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
+import { useUnreadBadge } from '../../utils/composables'
 import Login from '../common/Login.vue'
 import AccountSettings from './AccountSettings.vue'
 import { processItem } from '../../utils/email-parser'
@@ -33,6 +34,9 @@ const timer = ref(null)
 
 const { t } = useScopedI18n('views.index.SimpleIndex')
 
+// 未读角标：标题 / favicon 展示未读数（需开启「邮件已读状态」）
+const { setUnreadCount, clearUnreadBadge } = useUnreadBadge()
+
 // 复制地址；成功后按钮原地显示「已复制」，避免弹窗打扰
 const addressCopied = ref(false)
 let addressCopiedTimer = null
@@ -51,8 +55,9 @@ const copyAddress = async () => {
 const fetchMails = async () => {
     if (!settings.value.address) return
     try {
-        const { results, count } = await api.fetch(`/api/mails?limit=1&offset=${currentPage.value - 1}`)
+        const { results, count, unreadCount } = await api.fetch(`/api/mails?limit=1&offset=${currentPage.value - 1}`)
         if (typeof count === 'number') totalCount.value = count;
+        if (typeof unreadCount === 'number') setUnreadCount(unreadCount);
         const rawMail = results && results.length > 0 ? results[0] : null
         currentMail.value = rawMail ? await processItem(rawMail) : null
     } catch (error) {
@@ -144,6 +149,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
     clearInterval(timer.value)
     clearTimeout(addressCopiedTimer)
+    clearUnreadBadge()
 })
 </script>
 

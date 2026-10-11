@@ -79,48 +79,56 @@ async function email(message: ForwardableEmailMessage, env: Bindings, ctx: Execu
         return undefined;
     });
 
-    // forward email
-    await forwardEmail(message, env);
-
-    // AI email content extraction
-    const aiExtractResult = await extractEmailInfo(parsedEmailContext, env, message_id, toAddress);
-
-    // send email to telegram
-    try {
-        await sendMailToTelegram(
-            { env: env } as Context<HonoCustomType>,
-            toAddress, parsedEmailContext, message_id, aiExtractResult);
-    } catch (error) {
-        console.error("send mail to telegram error", error);
-    }
-
-    // send webhook
-    try {
-        await triggerWebhook(
-            { env: env } as Context<HonoCustomType>,
-            toAddress, parsedEmailContext, storedMailId, aiExtractResult
-        );
-    } catch (error) {
-        console.error("send webhook error", error);
-    }
-
-    // trigger another worker
-    try {
-        const parsedEmail = (await commonParseMail(parsedEmailContext));
-        const parsedText = parsedEmail?.text ?? ""
-        const rpcEmail: RPCEmailMessage = {
-            from: message.from,
-            to: toAddress,
-            rawEmail: rawEmail,
-            headers: message.headers
+    // 邮件已落库，其余副作用（转发 / AI 通知 / 下游 Worker / 自动回复）彼此独立，
+    // 并行执行并交给 ctx.waitUntil 保活：把串行 await 的总耗时降为「最慢一项」，
+    // 避免收信处理因逐个等待而超时。
+    const forward = async () => {
+        try {
+            await forwardEmail(message, env);
+        } catch (error) {
+            console.error("forward email error", error);
         }
-        await triggerAnotherWorker({ env: env } as Context<HonoCustomType>, rpcEmail, parsedText);
-    } catch (error) {
-        console.error("trigger another worker error", error);
-    }
+    };
 
-    // auto reply email
-    await auto_reply(message, env, toAddress);
+    const notifyByExtract = async () => {
+        try {
+            const aiExtractResult = await extractEmailInfo(parsedEmailContext, env, message_id, toAddress);
+            await Promise.allSettled([
+                sendMailToTelegram(
+                    { env: env } as Context<HonoCustomType>,
+                    toAddress, parsedEmailContext, message_id, aiExtractResult
+                ).catch((error) => console.error("send mail to telegram error", error)),
+                triggerWebhook(
+                    { env: env } as Context<HonoCustomType>,
+                    toAddress, parsedEmailContext, storedMailId, aiExtractResult
+                ).catch((error) => console.error("send webhook error", error)),
+            ]);
+        } catch (error) {
+            console.error("ai extract error", error);
+        }
+    };
+
+    const triggerDownstream = async () => {
+        try {
+            const parsedEmail = await commonParseMail(parsedEmailContext);
+            const rpcEmail: RPCEmailMessage = {
+                from: message.from,
+                to: toAddress,
+                rawEmail: rawEmail,
+                headers: message.headers
+            }
+            await triggerAnotherWorker({ env: env } as Context<HonoCustomType>, rpcEmail, parsedEmail?.text ?? "");
+        } catch (error) {
+            console.error("trigger another worker error", error);
+        }
+    };
+
+    ctx.waitUntil(Promise.allSettled([
+        forward(),
+        notifyByExtract(),
+        triggerDownstream(),
+        auto_reply(message, env, toAddress),
+    ]));
 }
 
 export { email }

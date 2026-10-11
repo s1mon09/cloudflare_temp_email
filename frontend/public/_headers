@@ -1,3 +1,20 @@
+# 全站基础安全响应头
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# 带内容哈希的构建产物可长期强缓存（Vite 输出到 /assets/，文件名随内容变化）
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 静态图标资源较短缓存
+/logo.png
+  Cache-Control: public, max-age=86400
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
 # 私有页面禁止搜索引擎收录（SPA 路由由 index.html 承载，需按路径打标）
 /admin
   X-Robots-Tag: noindex, nofollow

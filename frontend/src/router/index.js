@@ -14,45 +14,29 @@ import {
 
 const { jwt, preferredLocale } = useGlobalState()
 
+const Redeem = () => import('../views/Redeem.vue')
+const Admin = () => import('../views/Admin.vue')
+const TelegramMail = () => import('../views/telegram/Mail.vue')
+
+// 每个页面同时注册「带语言前缀」与「不带前缀」两条记录。
+// 不使用 alias：alias 无法为无参路径追加 :lang 参数，会触发 Vue Router 警告。
+const withLang = (path, component, meta) => {
+    const langPath = path === '/' ? '/:lang/' : `/:lang${path}`
+    return [
+        { path, component, meta },
+        { path: langPath, component, meta }
+    ]
+}
+
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        {
-            path: '/',
-            alias: '/:lang/',
-            component: Index,
-            meta: { titleKey: 'router.index' }
-        },
-        {
-            path: '/user',
-            alias: '/:lang/user',
-            component: User,
-            meta: { titleKey: 'router.user' }
-        },
-        {
-            path: '/redeem',
-            alias: '/:lang/redeem',
-            component: () => import('../views/Redeem.vue'),
-            meta: { titleKey: 'router.redeem' }
-        },
-        {
-            path: '/user/oauth2/callback',
-            alias: '/:lang/user/oauth2/callback',
-            component: UserOauth2Callback,
-            meta: { titleKey: 'router.user' }
-        },
-        {
-            path: '/admin',
-            alias: '/:lang/admin',
-            component: () => import('../views/Admin.vue'),
-            meta: { titleKey: 'router.admin' }
-        },
-        {
-            path: '/telegram_mail',
-            alias: '/:lang/telegram_mail',
-            component: () => import('../views/telegram/Mail.vue'),
-            meta: { titleKey: 'router.telegramMail' }
-        },
+        ...withLang('/', Index, { titleKey: 'router.index' }),
+        ...withLang('/user', User, { titleKey: 'router.user' }),
+        ...withLang('/redeem', Redeem, { titleKey: 'router.redeem' }),
+        ...withLang('/user/oauth2/callback', UserOauth2Callback, { titleKey: 'router.user' }),
+        ...withLang('/admin', Admin, { titleKey: 'router.admin' }),
+        ...withLang('/telegram_mail', TelegramMail, { titleKey: 'router.telegramMail' }),
         {
             name: 'not-found',
             path: '/:pathMatch(.*)*',

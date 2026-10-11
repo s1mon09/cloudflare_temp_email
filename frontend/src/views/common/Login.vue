@@ -15,7 +15,6 @@ const props = defineProps({
     bindUserAddress: {
         type: Function,
         default: async () => { await api.bindUserAddress(); },
-        required: true
     },
     newAddressPath: {
         type: Function,
@@ -30,13 +29,15 @@ const props = defineProps({
                 }),
             });
         },
-        required: true
     },
 })
 
 const message = useMessage()
 const notification = useNotification()
 const router = useRouter()
+
+// 供父级（如「管理邮箱」弹窗）在创建成功后关闭自身
+const emit = defineEmits(['success'])
 
 const {
     jwt, loading, openSettings,
@@ -187,6 +188,7 @@ const newEmail = async () => {
         } catch (error) {
             message.error(`${t('bindUserAddressError')}: ${error.message}`);
         }
+        emit('success');
     } catch (error) {
         message.error(error.message || "error");
     }

@@ -4,7 +4,7 @@ import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
 import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, ContentCopyOutlined, NotificationsActiveFilled, NotificationsNoneFilled } from '@vicons/material'
-import { useIsMobile } from '../utils/composables'
+import { useIsMobile, useUnreadBadge } from '../utils/composables'
 import { processItem } from '../utils/email-parser'
 import { utcToLocalDate } from '../utils';
 import { buildReplyModel, buildForwardModel } from '../utils/mail-actions'
@@ -93,8 +93,10 @@ const openMail = (mail) => {
   curMail.value = mail
   if (mail?.is_unread !== 1 || !props.enableMailReadStatus) return
   mail.is_unread = 0
+  setUnreadCount(unreadCount.value - 1)
   void props.updateMailReadStatus(mail.id, false).catch(() => {
     mail.is_unread = 1
+    setUnreadCount(unreadCount.value + 1)
   })
 }
 
@@ -106,6 +108,7 @@ const toggleCurrentMailUnread = async () => {
   mail.is_unread = isUnread ? 1 : 0
   try {
     await props.updateMailReadStatus(mail.id, isUnread)
+    setUnreadCount(unreadCount.value + (isUnread ? 1 : -1))
     message.success(t("success"))
   } catch {
     mail.is_unread = previousValue
@@ -155,6 +158,12 @@ const nextMail = async () => {
 }
 
 const curMail = ref(null);
+// 移动端抽屉的 show 需要布尔值；curMail 同时承载「选中邮件」与「抽屉开关」，
+// 直接绑定对象会触发 naive-ui 的 show 类型告警，这里用 computed 代理
+const showMailDrawer = computed({
+  get: () => !!curMail.value,
+  set: (val) => { if (!val) curMail.value = null; }
+});
 
 const multiActionMode = ref(false)
 const showMultiActionDownload = ref(false)
@@ -225,12 +234,17 @@ const handleNewMailNotification = (isFirstLoad) => {
   notifyTrackedIds = new Set(rawData.value.map((mail) => mail.id))
 }
 
+// 未读角标：在浏览器标题与 favicon 上展示未读数（需开启「邮件已读状态」）
+const { unreadCount, setUnreadCount, clearUnreadBadge } = useUnreadBadge()
+
 const setupAutoRefresh = async (autoRefresh) => {
   // auto refresh every configAutoRefreshInterval seconds
   autoRefreshInterval.value = configAutoRefreshInterval.value;
   if (autoRefresh) {
     clearInterval(timer.value);
     timer.value = setInterval(async () => {
+      // 页面不可见时暂停轮询，避免后台标签页空转请求；回到页面后倒计时继续
+      if (document.hidden) return;
       if (loading.value) return;
       autoRefreshInterval.value--;
       if (autoRefreshInterval.value <= 0) {
@@ -257,7 +271,7 @@ watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
 const refresh = async () => {
   const previousMailId = curMail.value?.id;
   try {
-    const { results, count: totalCount } = await props.fetchMailData(
+    const { results, count: totalCount, unreadCount: unreadTotal } = await props.fetchMailData(
       pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
     );
     loading.value = true;
@@ -269,6 +283,9 @@ const refresh = async () => {
     notifyPrimed = true;
     if (typeof totalCount === 'number') {
       count.value = totalCount;
+    }
+    if (typeof unreadTotal === 'number') {
+      setUnreadCount(unreadTotal);
     }
     // 保留用户正在阅读的邮件，避免刷新时被强制跳回最新一封
     const stillListed = previousMailId == null
@@ -473,6 +490,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   clearInterval(timer.value)
   clearTimeout(searchDebounceTimer)
+  // 离开收件箱时移除角标，避免影响其他页面
+  clearUnreadBadge()
 })
 </script>
 
@@ -719,7 +738,7 @@ onBeforeUnmount(() => {
           </n-list-item>
         </n-list>
       </div>
-      <n-drawer v-model:show="curMail" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
+      <n-drawer v-model:show="showMailDrawer" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
         style="height: 80vh;">
         <n-drawer-content :title="curMail ? curMail.subject : ''" closable>
           <n-card :bordered="false" embedded style="overflow: auto;">

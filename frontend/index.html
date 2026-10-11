@@ -128,6 +128,15 @@
     </main>
     <!-- seo:body:end -->
   </div>
+  <!--
+    iOS WebKit 白屏 workaround（WebKit Bug 314891）：
+    iPhone/iPad 上从其他 App 切回已打开的标签页时，若页面中不存在任何
+    计算样式为 display: list-item 的元素，会渲染成整页白屏，需下拉刷新才恢复。
+    这里保留一个视觉不可见但真实参与渲染（非 opacity/visibility/display 隐藏、
+    保持默认 list-style、处于正常文档流）的 list-item 元素来规避该问题。
+    该元素位于 #app 之外，不会被 Vue 挂载覆盖。
+  -->
+  <div aria-hidden="true" style="display: list-item; color: transparent; margin: 0; padding: 0; line-height: 0;">.</div>
   <script type="module" src="/src/main.js"></script>
 </body>
 

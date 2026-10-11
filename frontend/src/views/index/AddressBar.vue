@@ -80,7 +80,7 @@ onMounted(async () => {
         <n-modal v-model:show="showAddressManage" preset="card" :title="t('addressManage')"
             style="width: 720px;">
             <TelegramAddress v-if="isTelegram" />
-            <AddressManagement v-else-if="userJwt" />
+            <AddressManagement v-else-if="userJwt" @close="showAddressManage = false" />
             <LocalAddress v-else />
         </n-modal>
     </div>

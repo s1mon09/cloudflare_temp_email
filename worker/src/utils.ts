@@ -37,13 +37,37 @@ export const getJsonSetting = async <T = any>(
     return null;
 }
 
+// 设置项读取非常频繁（每封邮件、每个敏感请求都会读），但内容变动很少。
+// 使用 isolate 级内存缓存减少 D1 读取次数与请求延迟：写入（saveSetting/deleteSetting）
+// 时本地立即失效，跨 isolate 最多滞后 TTL。
+const SETTINGS_CACHE_TTL_MS = 60_000;
+const settingsCache = new Map<string, { value: string | null; expireAt: number }>();
+
+// 发送限额计数是高频读写的动态值（裸 SQL 直接写库、要求强一致），不参与缓存
+const isSettingsCacheable = (key: string): boolean => {
+    return !key.startsWith(CONSTANTS.SEND_MAIL_LIMIT_COUNT_KEY_PREFIX);
+};
+
 export const getSetting = async (
     c: Context<HonoCustomType>, key: string
 ): Promise<string | null> => {
+    const cacheable = isSettingsCacheable(key);
+    if (cacheable) {
+        const cached = settingsCache.get(key);
+        if (cached && cached.expireAt > Date.now()) {
+            return cached.value;
+        }
+    }
     try {
         const value = await c.env.DB.prepare(
             `SELECT value FROM settings where key = ?`
         ).bind(key).first<string>("value");
+        if (cacheable) {
+            settingsCache.set(key, {
+                value: value ?? null,
+                expireAt: Date.now() + SETTINGS_CACHE_TTL_MS
+            });
+        }
         return value;
     } catch (error) {
         console.error(`GetSetting: Failed to get ${key}`, error);
@@ -59,6 +83,9 @@ export const saveSetting = async (
         `INSERT or REPLACE INTO settings (key, value) VALUES (?, ?)`
         + ` ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = datetime('now')`
     ).bind(key, value, value).run();
+    if (isSettingsCacheable(key)) {
+        settingsCache.set(key, { value, expireAt: Date.now() + SETTINGS_CACHE_TTL_MS });
+    }
     return true;
 }
 
@@ -69,6 +96,7 @@ export const deleteSetting = async (
     await c.env.DB.prepare(
         `DELETE FROM settings WHERE key = ?`
     ).bind(key).run();
+    settingsCache.delete(key);
     return true;
 }
 

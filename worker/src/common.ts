@@ -723,7 +723,9 @@ export const handleMailListQuery = async (
     query: string, countQuery: string, params: string[],
     limit: string | number | undefined | null,
     offset: string | number | undefined | null,
-    orderBy?: string
+    orderBy?: string,
+    // 可选：统计未读数（仅收件箱列表使用，用于前端标题/favicon 角标）
+    unread?: { query: string; params: string[] }
 ): Promise<Response> => {
     const { resolveRawEmailList } = await import('./gzip');
     const msgs = i18n.getMessagesbyContext(c);
@@ -740,7 +742,14 @@ export const handleMailListQuery = async (
     const count = offset == 0 ? await c.env.DB.prepare(
         countQuery
     ).bind(...params).first("count") : 0;
-    return c.json({ results: resolvedResults, count });
+    // 未读数只在第一页统计，避免翻页时重复查询
+    const unreadCount = unread && offset == 0 ? await c.env.DB.prepare(
+        unread.query
+    ).bind(...unread.params).first("count") : undefined;
+    return c.json({
+        results: resolvedResults, count,
+        ...(unreadCount != null ? { unreadCount } : {})
+    });
 }
 
 export const commonParseMail = async (parsedEmailContext: ParsedEmailContext): Promise<{

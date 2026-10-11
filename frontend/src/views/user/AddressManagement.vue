@@ -7,6 +7,7 @@ import { NBadge, NPopconfirm, NButton } from 'naive-ui'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 import { getRouterPathWithLang } from '../../utils'
+import { useIsMobile } from '../../utils/composables'
 import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
 
 import Login from '../common/Login.vue';
@@ -14,6 +15,9 @@ import Login from '../common/Login.vue';
 const { jwt } = useGlobalState()
 const message = useMessage()
 const router = useRouter()
+const isMobile = useIsMobile()
+// 创建新邮箱成功后由父级（「管理邮箱」弹窗）关闭自身
+const emit = defineEmits(['close'])
 
 const { locale, t } = useScopedI18n('views.user.AddressManagement')
 const { t: credentialT } = useScopedI18n('components.AddressCredentialModal')
@@ -57,6 +61,12 @@ const changeMailAddress = async (address_id) => {
         console.log(error)
         message.error(error.message || "error");
     }
+}
+
+const startTransfer = (row) => {
+    currentAddressId.value = row.id;
+    currentAddress.value = row.name;
+    showTranferAddress.value = true;
 }
 
 const unbindAddress = async (address_id) => {
@@ -206,11 +216,7 @@ const columns = [
                     {
                         tertiary: true,
                         type: "primary",
-                        onClick: () => {
-                            currentAddressId.value = row.id;
-                            currentAddress.value = row.name;
-                            showTranferAddress.value = true;
-                        }
+                        onClick: () => startTransfer(row)
                     },
                     { default: () => t('transferAddress') }
                 ),
@@ -268,18 +274,53 @@ watch([page, pageSize], async () => {
                         {{ t('query') }}
                     </n-button>
                 </n-input-group>
-                <div class="address-table-scroll">
+                <div class="address-pager">
                     <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count"
                         :page-sizes="[20, 50, 100]" show-size-picker>
                         <template #prefix="{ itemCount }">
                             {{ t('itemCount') }}: {{ itemCount }}
                         </template>
                     </n-pagination>
-                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+                </div>
+                <n-data-table v-if="!isMobile" :columns="columns" :data="data" :bordered="false" embedded />
+                <div v-else class="address-cards">
+                    <div v-for="row in data" :key="row.id" class="address-card">
+                        <div class="address-card__name">{{ row.name }}</div>
+                        <div class="address-card__stats">
+                            <span class="address-card__stat">
+                                {{ t('mail_count') }}
+                                <n-badge :value="row.mail_count" show-zero :max="99" type="success" />
+                            </span>
+                            <span class="address-card__stat">
+                                {{ t('send_count') }}
+                                <n-badge :value="row.send_count" show-zero :max="99" type="success" />
+                            </span>
+                        </div>
+                        <div class="address-card__actions">
+                            <n-button size="small" tertiary type="primary" @click="showCredential(row)">
+                                {{ credentialT('addressCredential') }}
+                            </n-button>
+                            <n-popconfirm @positive-click="changeMailAddress(row.id)">
+                                <template #trigger>
+                                    <n-button size="small" tertiary type="primary">{{ t('openMailbox') }}</n-button>
+                                </template>
+                                {{ t('openMailbox') }}?
+                            </n-popconfirm>
+                            <n-button size="small" tertiary type="primary" @click="startTransfer(row)">
+                                {{ t('transferAddress') }}
+                            </n-button>
+                            <n-popconfirm @positive-click="unbindAddress(row.id)">
+                                <template #trigger>
+                                    <n-button size="small" tertiary type="error">{{ t('unbindAddress') }}</n-button>
+                                </template>
+                                {{ t('unbindAddressTip') }}
+                            </n-popconfirm>
+                        </div>
+                    </div>
                 </div>
             </n-tab-pane>
             <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">
-                <Login />
+                <Login @success="emit('close')" />
             </n-tab-pane>
         </n-tabs>
     </div>
@@ -290,13 +331,49 @@ watch([page, pageSize], async () => {
     min-width: 640px;
 }
 
-.address-table-scroll {
+.address-pager {
+    margin-top: 10px;
+    margin-bottom: 10px;
     max-width: 100%;
     overflow-x: auto;
 }
 
-.n-pagination {
-    margin-top: 10px;
+.address-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+}
+
+.address-card {
+    padding: 12px;
+    border: 1px solid var(--n-border-color);
+    border-radius: var(--n-border-radius);
+}
+
+.address-card__name {
+    margin-bottom: 8px;
+    font-weight: 600;
+    word-break: break-all;
+}
+
+.address-card__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 10px;
+    color: var(--n-text-color-3);
+}
+
+.address-card__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.address-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 </style>

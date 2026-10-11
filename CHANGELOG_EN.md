@@ -10,6 +10,7 @@
 
 ### Features
 
+- feat: |Inbox| When mail read status is enabled, show an unread-count badge on the browser title and favicon (including simple mode); it updates in real time on read/unread toggles and clears when leaving the inbox
 - feat: |User| Search bound mailboxes by email address in address management with accurate pagination (issue #1156)
 - feat: |AI Extract| Add `AI_EXTRACT_MODE` to explicitly choose local rules only (`local`) or prefer Workers AI (`ai`); defaults to local rules when unset so mail content is never sent to AI. **Upgrade note**: deployments that relied on the Workers AI binding to enable AI extraction automatically must set `AI_EXTRACT_MODE = "ai"`
 
@@ -17,10 +18,21 @@
 
 - fix: |Mail| Check the SMTP envelope sender and every From email address against sender blacklists; parse addresses independently so body parsing failures or multiple From addresses cannot skip matching; preserve envelope checks on address parsing errors
 - fix: |AI Extract| In `ai` mode, an address allowlist miss now skips only the Workers AI call and still falls back to local verification-code extraction
+- fix: |Frontend| Register both language-prefixed and unprefixed route records instead of `alias`, which cannot add `:lang` to a param-less path, removing the Vue Router param warning
+- fix: |Frontend| Remove `required` on Login props that conflict with their defaults, removing the `Missing required prop` warnings
+- fix: |Frontend| Use a boolean proxy for the mobile mail-detail drawer `show`, fixing the naive-ui `show` type warning caused by binding a mail object to `v-model:show`
+- fix: |Frontend| Fix the full-page blank screen on iOS (WebKit) after switching back to an open tab from another app, which required a manual refresh: keep an invisible `display: list-item` element to work around the WebKit rendering bug (bugs.webkit.org/show_bug.cgi?id=314891)
+- fix: |User| Use a card layout for address management on mobile instead of a table that was too wide and needed horizontal scrolling
+- fix: |Frontend| Auto-close the home-page "manage mailbox" modal after successfully creating a new mailbox (the credential dialog stays open for saving)
 
 ### Improvements
 
 - feat: |AI Extract| Improve local verification-code rules: also read the mail subject; support codes before keywords (e.g. `116352（动态验证码）`, `ABC123 is your code`), `G-123456` prefixes, grouped / spaced / zero-width-split / full-width codes, and Russian, Spanish, Portuguese, French, German, Italian, Turkish and Hebrew keywords; reject numbers longer than 8 digits, decimals and amounts, times, digits in URLs and email addresses, tracking / order / voucher codes and letters-only words; only accept keyword-less numbers in stricter positions; bound input length and remove regex backtracking risks
+- perf: |Mail| Run post-storage side effects (forwarding / Telegram / Webhook / downstream Worker / auto-reply) in parallel and keep them alive with `ctx.waitUntil`, reducing total latency from the sum to the slowest task and lowering the risk of mail-processing timeouts
+- perf: |Frontend| Load non-first-screen Index children (send box, settings, appearance, webhook, attachment, about, simple mode) on demand to shrink the initial bundle
+- perf: |Frontend| Add one-year immutable caching for content-hashed build assets (`/assets/*`) and site-wide security headers (`X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Permissions-Policy`)
+- perf: |Settings| Add an isolate-level in-memory cache for setting reads (60s TTL, invalidated on write) to cut D1 reads and API latency; dynamic values such as send-limit counters are excluded to keep strong consistency
+- perf: |Inbox| Pause auto-refresh polling while the tab is hidden and resume the countdown on return, avoiding idle requests from background tabs
 
 ## v1.12.0
 
