@@ -276,11 +276,14 @@ watch([page, pageSize], async () => {
                 </n-input-group>
                 <div class="address-pager">
                     <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count"
-                        :page-sizes="[20, 50, 100]" show-size-picker>
-                        <template #prefix="{ itemCount }">
+                        :simple="isMobile" :show-size-picker="!isMobile" :page-sizes="[20, 50, 100]">
+                        <template v-if="!isMobile" #prefix="{ itemCount }">
                             {{ t('itemCount') }}: {{ itemCount }}
                         </template>
                     </n-pagination>
+                    <span v-if="isMobile" class="address-pager__count">
+                        {{ t('itemCount') }}: {{ count }}
+                    </span>
                 </div>
                 <n-data-table v-if="!isMobile" :columns="columns" :data="data" :bordered="false" embedded />
                 <div v-else class="address-cards">
@@ -332,10 +335,19 @@ watch([page, pageSize], async () => {
 }
 
 .address-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     margin-top: 10px;
     margin-bottom: 10px;
     max-width: 100%;
     overflow-x: auto;
+}
+
+.address-pager__count {
+    color: var(--n-text-color-3);
+    font-size: 13px;
 }
 
 .address-cards {

@@ -81,6 +81,14 @@ const page = ref(1)
 const pageSize = ref(20)
 const loadError = ref(null)
 
+// 自动刷新倒计时可视化：环形进度表示距下次刷新的进程（0 → 100%）
+const refreshProgress = computed(() => {
+  const total = Number(configAutoRefreshInterval.value) || 0
+  if (!autoRefresh.value || total <= 0) return 0
+  const remaining = Math.min(total, Math.max(0, autoRefreshInterval.value))
+  return Math.round(((total - remaining) / total) * 100)
+})
+
 const mailListPreviewLineClampValue = computed(() => {
   const value = Number(mailListPreviewLineClamp.value)
   if (!Number.isFinite(value)) return 0
@@ -572,6 +580,10 @@ onBeforeUnmount(() => {
               {{ t('autoRefresh') }}
             </template>
           </n-switch>
+          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="8"
+            :width="34" :show-indicator="false" status="info">
+            <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
+          </n-progress>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
             {{ t('refresh') }}
           </n-button>
@@ -728,6 +740,10 @@ onBeforeUnmount(() => {
             {{ t('autoRefresh') }}
           </template>
         </n-switch>
+        <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="8"
+          :width="28" :show-indicator="false" status="info">
+          <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
+        </n-progress>
         <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
           {{ t('refresh') }}
         </n-button>
@@ -948,5 +964,12 @@ pre {
     padding-top: 14px;
     padding-bottom: 14px;
   }
+}
+
+/* 自动刷新倒计时：环形进度内展示剩余秒数 */
+.refresh-countdown {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--n-text-color-3);
 }
 </style>

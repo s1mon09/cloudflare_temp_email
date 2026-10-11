@@ -89,6 +89,7 @@ const login = async () => {
             } catch (error) {
                 message.error(`${t('bindUserAddressError')}: ${error.message}`);
             }
+            emit('success');
             await router.push(getRouterPathWithLang("/", locale.value));
         } catch (error) {
             message.error(error.message || "error");
@@ -115,6 +116,7 @@ const login = async () => {
         } catch (error) {
             message.error(`${t('bindUserAddressError')}: ${error.message}`);
         }
+        emit('success');
         await router.push(getRouterPathWithLang("/", locale.value));
     } catch (error) {
         message.error(error.message || "error");
@@ -181,6 +183,8 @@ const newEmail = async () => {
         jwt.value = res["jwt"];
         addressPassword.value = res["password"] || '';
         await api.getSettings();
+        // 先关闭管理弹窗再跳转，避免导航导致组件卸载后信号丢失
+        emit('success');
         await router.push(getRouterPathWithLang("/", locale.value));
         showAddressCredential.value = true;
         try {
@@ -188,7 +192,6 @@ const newEmail = async () => {
         } catch (error) {
             message.error(`${t('bindUserAddressError')}: ${error.message}`);
         }
-        emit('success');
     } catch (error) {
         message.error(error.message || "error");
     }

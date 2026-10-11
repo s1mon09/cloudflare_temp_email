@@ -39,6 +39,9 @@
 - feat: |Global| Show an offline banner at the top when the network is down and hide it automatically on reconnect; the inbox pauses polling while offline to avoid idle requests
 - feat: |Inbox| Show an in-page error with a Retry button when the mail list fails to load, instead of only a toast with an empty list
 - style: |Inbox| Increase the mail list item tap area on touch/narrow screens to reduce mis-taps
+- feat: |Inbox| Add a circular countdown ring next to the auto-refresh switch, showing the seconds remaining until the next refresh
+- fix: |User| Use simple pagination (without the page-size picker) for address management on mobile and show the total separately, preventing horizontal overflow
+- fix: |Login| Close the "manage mailbox" modal right after login / register / new-mailbox success (emit before navigation so the signal is not lost on unmount)
 
 ## v1.12.0
 
