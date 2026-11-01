@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
     <n-alert v-if="isOffline" type="warning" :show-icon="true" style="margin: 8px;">
       {{ t('offline') }}
     </n-alert>
-    <n-spin description="loading..." :show="loading">
+    <n-spin :description="t('loading')" :show="loading">
       <n-notification-provider container-style="margin-top: 60px;">
         <n-message-provider container-style="margin-top: 20px;">
           <n-grid x-gap="12" :cols="gridMaxCols">

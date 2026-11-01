@@ -22,7 +22,7 @@ import MailContentRenderer from '../../components/MailContentRenderer.vue'
 import AddressSelect from '../../components/AddressSelect.vue'
 import AddressExpiry from '../../components/AddressExpiry.vue'
 
-const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings, loading } = useGlobalState()
+const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings } = useGlobalState()
 const message = useMessage()
 
 // 邮件数据
@@ -32,6 +32,8 @@ const currentMail = ref(null)
 const showAccountSettingsCard = ref(false)
 const currentAutoRefreshInterval = ref(60)
 const timer = ref(null)
+const mailLoading = ref(false)
+const mailError = ref('')
 
 const { t } = useScopedI18n('views.index.SimpleIndex')
 
@@ -52,18 +54,25 @@ const copyAddress = async () => {
     }
 }
 
-// 获取邮件数据
+// 获取邮件数据；列表区域使用局部加载态，避免每次刷新都遮挡整页
 const fetchMails = async () => {
     if (!settings.value.address) return
+    mailLoading.value = true
     try {
-        const { results, count, unreadCount } = await api.fetch(`/api/mails?limit=1&offset=${currentPage.value - 1}`)
+        const { results, count, unreadCount } = await api.fetch(`/api/mails?limit=1&offset=${currentPage.value - 1}`, {
+            showLoading: false
+        })
         if (typeof count === 'number') totalCount.value = count;
         if (typeof unreadCount === 'number') setUnreadCount(unreadCount);
         const rawMail = results && results.length > 0 ? results[0] : null
         currentMail.value = rawMail ? await processItem(rawMail) : null
+        mailError.value = ''
     } catch (error) {
         console.error('Failed to fetch mails:', error)
-        message.error(t('fetchMailsFailed'))
+        // 页内展示错误并提供重试，避免只弹 toast 后内容区空白
+        mailError.value = error.message || t('fetchMailsFailed')
+    } finally {
+        mailLoading.value = false
     }
 }
 
@@ -101,12 +110,12 @@ const deleteMail = async () => {
 
 // 刷新邮件；silent 用于自动刷新/删除后的刷新，避免重复提示打扰
 const refreshMails = async ({ silent = false } = {}) => {
-    if (loading.value) return
+    if (mailLoading.value) return
     currentPage.value = 1
     currentAutoRefreshInterval.value = 60
     if (!silent) showAccountSettingsCard.value = false
     await fetchMails()
-    if (!silent) message.success(t('refreshSuccess'))
+    if (!silent && !mailError.value) message.success(t('refreshSuccess'))
 }
 
 // 分页控制
@@ -170,8 +179,8 @@ onBeforeUnmount(() => {
                         <AddressExpiry />
                     </div>
                 </div>
-                <n-flex justify="center">
-                    <n-button @click="refreshMails()" :loading="loading" type="primary" tertiary size="small">
+                <n-flex justify="center" class="action-bar">
+                    <n-button @click="refreshMails()" :loading="mailLoading" type="primary" tertiary size="small">
                         <template #icon>
                             <n-icon>
                                 <RefreshFilled />
@@ -220,9 +229,18 @@ onBeforeUnmount(() => {
 
             <n-card v-else :bordered="false" embedded style="text-align: left;">
 
+                <n-alert v-if="mailError && currentMail" type="error" :bordered="false" style="margin-bottom: 12px;">
+                    {{ mailError }}
+                    <template #action>
+                        <n-button size="small" tertiary type="primary" @click="refreshMails()">
+                            {{ t('retry') }}
+                        </n-button>
+                    </template>
+                </n-alert>
+
                 <div v-if="totalCount > 1">
                     <n-flex justify="space-between">
-                        <n-button @click="prevPage" :disabled="!canGoPrev" text size="small">
+                        <n-button @click="prevPage" :disabled="!canGoPrev" text size="small" class="page-button">
                             <template #icon>
                                 <n-icon>
                                     <ArrowBackIosNewFilled />
@@ -233,7 +251,8 @@ onBeforeUnmount(() => {
                         <n-text size="small">
                             {{ t('mailCount', { current: currentPageDisplay, total: totalCount }) }}
                         </n-text>
-                        <n-button @click="nextPage" :disabled="!canGoNext" text size="small" icon-placement="right">
+                        <n-button @click="nextPage" :disabled="!canGoNext" text size="small" icon-placement="right"
+                            class="page-button">
                             <template #icon>
                                 <n-icon>
                                     <ArrowForwardIosFilled />
@@ -244,8 +263,18 @@ onBeforeUnmount(() => {
                     </n-flex>
                 </div>
 
-                <div v-if="!currentMail" class="no-mail">
-                    <n-empty :description="t('noMails')" />
+                <div v-if="mailLoading && !currentMail" class="mail-placeholder">
+                    <n-skeleton text :repeat="2" />
+                    <n-skeleton text style="width: 60%;" />
+                </div>
+                <div v-else-if="!currentMail" class="no-mail">
+                    <n-empty :description="mailError ? t('fetchMailsFailed') : t('noMails')">
+                        <template #extra>
+                            <n-button size="small" tertiary type="primary" @click="refreshMails()">
+                                {{ t('refreshMails') }}
+                            </n-button>
+                        </template>
+                    </n-empty>
                 </div>
                 <div v-else>
                     <h3 v-if="currentMail.subject"
@@ -277,11 +306,24 @@ onBeforeUnmount(() => {
 .center {
     max-width: 800px;
     margin: 0 auto;
+    padding: 0 12px;
+    box-sizing: border-box;
 }
 
 .n-card {
     margin-top: 20px;
     width: 100%;
+}
+
+.mail-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 28px 4px;
+}
+
+.no-mail {
+    padding: 12px 0;
 }
 
 .mail-title-unread {
@@ -297,5 +339,24 @@ onBeforeUnmount(() => {
     background: #2080f0;
     content: '';
     vertical-align: middle;
+}
+
+/* 移动端：收紧边距并增大可点击区域，降低误触 */
+@media (max-width: 640px) {
+    .center {
+        padding: 0 8px;
+    }
+
+    .n-card {
+        margin-top: 12px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .action-bar :deep(.n-button),
+    .no-mail :deep(.n-button),
+    .page-button {
+        min-height: 38px;
+    }
 }
 </style>

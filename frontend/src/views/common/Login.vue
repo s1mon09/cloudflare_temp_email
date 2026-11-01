@@ -10,6 +10,7 @@ import Turnstile from '../../components/Turnstile.vue'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 import { getRouterPathWithLang, hashPassword } from '../../utils'
+import { useIsMobile } from '../../utils/composables'
 
 const props = defineProps({
     bindUserAddress: {
@@ -41,6 +42,7 @@ const props = defineProps({
 const message = useMessage()
 const notification = useNotification()
 const router = useRouter()
+const isMobile = useIsMobile()
 
 // 供父级（如「管理邮箱」弹窗）在创建成功后关闭自身
 const emit = defineEmits(['success'])
@@ -303,7 +305,8 @@ onMounted(async () => {
         <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
             <span>{{ t('bindUserInfo') }}</span>
         </n-alert>
-        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" size="large" justify-content="space-evenly">
+        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" :size="isMobile ? 'medium' : 'large'"
+            :tabs-padding="isMobile ? 12 : undefined" justify-content="space-evenly" class="login-tabs">
             <n-tab-pane name="signin" :tab="loginAndBindTag">
                 <n-form>
                     <div v-if="loginMethod === 'password'">
@@ -328,7 +331,7 @@ onMounted(async () => {
                     <div class="switch-login-button">
                         <n-button v-if="openSettings?.enableAddressPassword && !openSettings.addressPasswordLoginOnly"
                             @click="loginMethod === 'password' ? loginMethod = 'credential' : loginMethod = 'password'"
-                            type="info" quaternary size="tiny">
+                            type="info" quaternary size="small">
                             {{ loginMethod === 'password' ? t('credentialLogin') : t('passwordLogin') }}
                         </n-button>
                     </div>
@@ -469,5 +472,19 @@ onMounted(async () => {
 
 .n-form {
     text-align: left;
+}
+
+/* 移动端：标签页与切换按钮保持足够大的触控区域 */
+@media (max-width: 640px) {
+    .login-tabs :deep(.n-tabs-tab) {
+        font-size: 14px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .login-tabs :deep(.n-tabs-tab),
+    .switch-login-button :deep(.n-button) {
+        min-height: 36px;
+    }
 }
 </style>

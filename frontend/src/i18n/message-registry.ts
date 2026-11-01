@@ -1,5 +1,6 @@
 export const MESSAGE_REGISTRY = {
   "components.App": {
+    "loading": { "en": "Loading", "zh": "加载中" },
     "offline": { "en": "You are offline. Some features may be unavailable.", "zh": "网络已断开，部分功能可能不可用。" }
   },
   "router": {
@@ -1554,6 +1555,10 @@ export const MESSAGE_REGISTRY = {
     "readStatusUpdated": {
       "en": "Read status updated",
       "zh": "已读状态已更新"
+    },
+    "retry": {
+      "en": "Retry",
+      "zh": "重试"
     },
     "refreshAfter": {
       "en": "Refresh After {msg} Seconds",

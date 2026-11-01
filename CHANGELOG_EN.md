@@ -29,6 +29,8 @@
 
 ### Improvements
 
+- feat: |UX| Simple mode now shows a mail loading skeleton, an inline error with one-click retry, and a refresh action for an empty inbox; narrow screens get tighter page margins, a responsive mailbox-management modal, and larger tab/button touch targets, while the loading label is localized
+
 - docs: |User| Document mailbox binding, bound mailbox credential retrieval, and unbinding APIs with dual authentication requirements and request examples
 
 - perf: |CI| Organize test suites and run a dedicated Webhook UI group alongside API, other browser tests and SMTP/IMAP, with only each group's required services, separate unit/WASM tests and one aggregate check

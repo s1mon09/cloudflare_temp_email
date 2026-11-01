@@ -82,7 +82,7 @@ onMounted(async () => {
         <AddressCredentialModal v-model:show="showAddressCredential" :address="settings.address" :jwt="jwt"
             :address-password="addressPassword" />
         <n-modal v-model:show="showAddressManage" preset="card" :title="t('addressManage')"
-            style="width: 720px;">
+            style="width: min(720px, calc(100vw - 24px));">
             <TelegramAddress v-if="isTelegram" />
             <AddressManagement v-else-if="showUserMailboxes" @close="showAddressManage = false" />
             <LocalAddress v-else />
@@ -112,6 +112,18 @@ onMounted(async () => {
 .address-manage {
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .center {
+        margin: 12px 8px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .address-manage {
+        min-height: 32px;
+    }
 }
 
 </style>
