@@ -6,11 +6,36 @@
   <a href="CHANGELOG_EN.md">English</a>
 </p>
 
-## v1.13.0(main)
+## v1.14.0(main)
 
 ### Features
 
 - feat: |Inbox| When mail read status is enabled, show an unread-count badge on the browser title and favicon (including simple mode); it updates in real time on read/unread toggles and clears when leaving the inbox
+- feat: |User System| Add `DISABLE_USER_SYSTEM` to block user APIs, disable user admin tokens, and hide user interfaces
+- feat: |Mailbox Login| Add a password-only login-page switch that requires mailbox passwords; preserve existing credentials, login links, API access, and JWT lifetimes
+
+### Bug Fixes
+
+- fix: |Mail Reader| Reset inherited application defaults in Shadow mail and use browser-default system colors for a normal document while preserving sender colors
+- fix: |Telegram| Clean up the current push recipient's binding and push mapping before admin mailbox deletion, freeing a slot and preventing stale pushes on recreation; KV cleanup failures preserve the mailbox for retry, while database deletion failures may leave it unbound
+- fix: |CI| Fix WASM npm publishing paths so local tarballs are not interpreted as GitHub repositories
+- fix: |Mail Parser| Upgrade WASM parser dependencies and use raw values only for structured headers, preserving decoded text headers while fixing `header.From` webhook filters and sender loss after attachment removal
+- fix: |Mail Parser| Support postal-mime v4's first-header semantics: handle empty/missing From in fallback parsing and regenerate MIME type/encoding headers when removing attachments to preserve stored message bodies
+- fix: |Telegram| Store separate permanent internal binding tokens, preserve historical expired bindings, and issue mailbox credentials on access while rejecting internal tokens at mailbox APIs
+- fix: |Worker| Process unknown-mail, unbound-address, and empty-address cleanup in bounded batches to avoid D1 timeouts on large backlogs
+- fix: |User| Bind the mailbox transfer confirmation button to the existing request loading state, fixing the undefined loading variable
+
+### Improvements
+
+- docs: |User| Document mailbox binding, bound mailbox credential retrieval, and unbinding APIs with dual authentication requirements and request examples
+
+- perf: |CI| Organize test suites and run a dedicated Webhook UI group alongside API, other browser tests and SMTP/IMAP, with only each group's required services, separate unit/WASM tests and one aggregate check
+
+## v1.13.0
+
+### Features
+
+- feat: |Webhook| Add email filters with condition/AND/OR/NOT nodes, nesting, string and native regex matching, visual/JSON editing and rule checking; preserve all original From headers while still removing attachments when From is missing or invalid (issue #1155)
 - feat: |User| Search bound mailboxes by email address in address management with accurate pagination (issue #1156)
 - feat: |AI Extract| Add `AI_EXTRACT_MODE` to explicitly choose local rules only (`local`) or prefer Workers AI (`ai`); defaults to local rules when unset so mail content is never sent to AI. **Upgrade note**: deployments that relied on the Workers AI binding to enable AI extraction automatically must set `AI_EXTRACT_MODE = "ai"`
 
@@ -24,6 +49,7 @@
 - fix: |Frontend| Fix the full-page blank screen on iOS (WebKit) after switching back to an open tab from another app, which required a manual refresh: keep an invisible `display: list-item` element to work around the WebKit rendering bug (bugs.webkit.org/show_bug.cgi?id=314891)
 - fix: |User| Use a card layout for address management on mobile instead of a table that was too wide and needed horizontal scrolling
 - fix: |Frontend| Auto-close the home-page "manage mailbox" modal after successfully creating a new mailbox (the credential dialog stays open for saving)
+- fix: |Telegram| Fall back to HTML-to-text conversion when plain text body is empty, preventing "parse failed" messages in Telegram notifications
 
 ### Improvements
 
@@ -42,6 +68,7 @@
 - feat: |Inbox| Add a circular countdown ring next to the auto-refresh switch, showing the seconds remaining until the next refresh
 - fix: |User| Use simple pagination (without the page-size picker) for address management on mobile and show the total separately, preventing horizontal overflow
 - fix: |Login| Close the "manage mailbox" modal right after login / register / new-mailbox success (emit before navigation so the signal is not lost on unmount)
+- feat: |Frontend| Unify desktop and mobile mail summaries with prominent subjects, full sender identities and body previews; use theme-aware reader buttons and attachment-count badges, add keyboard-accessible actions and a mail-details dialog
 
 ## v1.12.0
 

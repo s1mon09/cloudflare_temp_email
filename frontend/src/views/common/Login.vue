@@ -288,7 +288,7 @@ onMounted(async () => {
                         v-model:value="loginCfToken" />
 
                     <div class="switch-login-button">
-                        <n-button v-if="openSettings?.enableAddressPassword"
+                        <n-button v-if="openSettings?.enableAddressPassword && !openSettings.addressPasswordLoginOnly"
                             @click="loginMethod === 'password' ? loginMethod = 'credential' : loginMethod = 'password'"
                             type="info" quaternary size="tiny">
                             {{ loginMethod === 'password' ? t('credentialLogin') : t('passwordLogin') }}
