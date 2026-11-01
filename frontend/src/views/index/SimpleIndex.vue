@@ -20,6 +20,7 @@ import AccountSettings from './AccountSettings.vue'
 import { processItem } from '../../utils/email-parser'
 import MailContentRenderer from '../../components/MailContentRenderer.vue'
 import AddressSelect from '../../components/AddressSelect.vue'
+import AddressExpiry from '../../components/AddressExpiry.vue'
 
 const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings, loading } = useGlobalState()
 const message = useMessage()
@@ -165,6 +166,9 @@ onBeforeUnmount(() => {
             <n-card :bordered="false" embedded>
                 <div style="text-align: center; margin-bottom: 16px; font-size: 18px;">
                     <AddressSelect :showCopy="false" size="small" />
+                    <div>
+                        <AddressExpiry />
+                    </div>
                 </div>
                 <n-flex justify="center">
                     <n-button @click="refreshMails()" :loading="loading" type="primary" tertiary size="small">

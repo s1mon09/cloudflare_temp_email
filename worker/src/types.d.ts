@@ -36,6 +36,8 @@ type Bindings = {
     ADDRESS_REGEX: string | undefined
     MIN_ADDRESS_LEN: string | number | undefined
     MAX_ADDRESS_LEN: string | number | undefined
+    DEFAULT_ADDRESS_TTL: string | number | undefined
+    ADDRESS_TTL_OPTIONS: string | undefined
     DEFAULT_DOMAINS: string | string[] | undefined
     DOMAINS: string | string[] | undefined
     ENABLE_CREATE_ADDRESS_SUBDOMAIN_MATCH: string | boolean | undefined

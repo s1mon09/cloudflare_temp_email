@@ -148,6 +148,8 @@ const getOpenSettings = async (message, notification) => {
             smtpImapProxyConfig: res["smtpImapProxyConfig"] || openSettings.value.smtpImapProxyConfig,
             statusUrl: res["statusUrl"] || "",
             enableGlobalTurnstileCheck: res["enableGlobalTurnstileCheck"] || false,
+            defaultAddressTtl: res["defaultAddressTtl"] || 0,
+            addressTtlOptions: Array.isArray(res["addressTtlOptions"]) ? res["addressTtlOptions"] : [],
         });
         if (openSettings.value.needAuth) {
             showAuth.value = true;
@@ -183,6 +185,7 @@ const getSettings = async () => {
             address: res["address"],
             auto_reply: res["auto_reply"],
             send_balance: res["send_balance"],
+            expires_at: res["expires_at"] || '',
         };
     } finally {
         settings.value.fetched = true;

@@ -61,11 +61,16 @@ export const useGlobalState = createGlobalState(
             },
             statusUrl: '',
             enableGlobalTurnstileCheck: false,
+            defaultAddressTtl: 0,
+            /** @type {number[]} */
+            addressTtlOptions: [],
         })
         const settings = ref({
             fetched: false,
             send_balance: 0,
             address: '',
+            // UTC datetime string, empty string means the mailbox never expires
+            expires_at: '',
             auto_reply: {
                 subject: '',
                 message: '',

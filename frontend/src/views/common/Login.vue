@@ -16,9 +16,14 @@ const props = defineProps({
         type: Function,
         default: async () => { await api.bindUserAddress(); },
     },
+    // Some creation endpoints (e.g. Telegram mini app) don't accept a TTL yet
+    supportAddressTtl: {
+        type: Boolean,
+        default: true,
+    },
     newAddressPath: {
         type: Function,
-        default: async (address_name, domain, cf_token, enableRandomSubdomain) => {
+        default: async (address_name, domain, cf_token, enableRandomSubdomain, ttl) => {
             return await api.fetch("/api/new_address", {
                 method: "POST",
                 body: JSON.stringify({
@@ -26,6 +31,7 @@ const props = defineProps({
                     domain: domain,
                     cf_token: cf_token,
                     enableRandomSubdomain: enableRandomSubdomain,
+                    ttl: ttl,
                 }),
             });
         },
@@ -133,6 +139,37 @@ const loginAndBindTag = computed(() => {
     return t('login')
 })
 
+// 新建邮箱有效期（秒），0 表示永久。选项由服务端 ADDRESS_TTL_OPTIONS 下发。
+const selectedTtl = ref(0)
+
+const formatTtlLabel = (seconds) => {
+    if (!seconds) return t('ttlPermanent')
+    if (seconds % 86400 === 0) return t('ttlDays', { days: seconds / 86400 })
+    if (seconds % 3600 === 0) return t('ttlHours', { hours: seconds / 3600 })
+    if (seconds % 60 === 0) return t('ttlMinutes', { minutes: seconds / 60 })
+    return t('ttlSeconds', { seconds })
+}
+
+const ttlOptions = computed(() => {
+    const options = openSettings.value.addressTtlOptions || []
+    return options.map((seconds) => ({
+        label: formatTtlLabel(seconds),
+        value: seconds,
+    }))
+})
+
+watch(
+    [() => openSettings.value.addressTtlOptions, () => openSettings.value.defaultAddressTtl],
+    ([options, defaultTtl]) => {
+        if (!Array.isArray(options) || options.length === 0) {
+            selectedTtl.value = 0
+            return
+        }
+        selectedTtl.value = options.includes(defaultTtl) ? defaultTtl : options[0]
+    },
+    { immediate: true }
+)
+
 const addressRegex = computed(() => {
     try {
         if (openSettings.value.addressRegex) {
@@ -178,7 +215,8 @@ const newEmail = async () => {
             nameToSend,
             domainToSend,
             cfToken.value,
-            subdomainMode.value === "random"
+            subdomainMode.value === "random",
+            selectedTtl.value
         );
         jwt.value = res["jwt"];
         addressPassword.value = res["password"] || '';
@@ -360,6 +398,9 @@ onMounted(async () => {
                                     <n-input-group-label>.{{ emailDomain }}</n-input-group-label>
                                 </n-input-group>
                             </div>
+                        </n-form-item-row>
+                        <n-form-item-row v-if="supportAddressTtl && ttlOptions.length > 0" :label="t('addressTtl')">
+                            <n-select v-model:value="selectedTtl" :options="ttlOptions" />
                         </n-form-item-row>
                         <Turnstile v-model:value="cfToken" />
                         <n-button type="primary" block secondary strong @click="newEmail" :loading="loading"

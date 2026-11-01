@@ -19,6 +19,23 @@ export const getRouterPathWithLang = (path: string, lang: string) => {
     return getPathWithLocale(path, normalizedLang);
 }
 
+// 后端时间统一为 UTC 字符串（"YYYY-MM-DD HH:MM:SS"），转成毫秒时间戳
+export const utcToTimestamp = (utcDate: string | null | undefined): number | null => {
+    if (!utcDate) return null;
+    const timestamp = new Date(`${utcDate} UTC`).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+// 到期剩余时间拆分为天/时/分，不足一分钟按一分钟显示
+export const getExpiryRemainingParts = (remainingMs: number) => {
+    const totalMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
+    return {
+        days: Math.floor(totalMinutes / 1440),
+        hours: Math.floor((totalMinutes % 1440) / 60),
+        minutes: totalMinutes % 60,
+    };
+}
+
 export const utcToLocalDate = (utcDate: string | null | undefined, useUTCDate: boolean) => {
     if (!utcDate) return '';
     const utcDateString = `${utcDate} UTC`;

@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |邮箱有效期| 新增 `DEFAULT_ADDRESS_TTL`（默认有效期，秒）与 `ADDRESS_TTL_OPTIONS`（可选有效期列表），创建邮箱时可选择有效期；新地址写入到期时间，前端邮箱栏显示到期倒计时（剩余 1 小时内与过期后高亮提示），定时任务自动删除过期邮箱及其邮件；不配置时邮箱永久有效
+- feat: |CI| 新增 push/main 与 PR 的快速 CI 门禁，缓存 pnpm 依赖并分别校验 worker（lint + build）与 frontend（test + build）
 - feat: |收件箱| 开启「邮件已读状态」后，浏览器标题与 favicon 会显示未读数量角标（含简易模式）；打开/标记已读未读时实时更新，离开收件箱后自动清除
 - feat: |用户系统| 新增 `DISABLE_USER_SYSTEM` 总开关，统一拦截用户接口、停用用户管理员令牌并隐藏前端用户界面
 - feat: |邮箱登录| 新增登录页仅显示密码登录的开关，仅在启用邮箱密码时生效；旧凭据、登录链接、API 访问和 JWT 时效保持原有行为
@@ -30,6 +32,8 @@
 - docs: |用户系统| 补充邮箱绑定、获取已绑定邮箱凭据及解绑 API 的双重鉴权说明和请求示例
 
 - perf: |CI| 整理测试目录，独立 Webhook UI 功能组，与 API、其他浏览器测试、SMTP/IMAP 并行执行；仅启动各组所需服务，保留单元测试、WASM 测试与统一检查结果
+
+- feat: |CI| 新增 push 到 main 与 PR 的快速 CI 门禁：Worker ESLint 与构建、Frontend 单元测试与构建，使用 pnpm 依赖缓存并在新提交时取消旧任务
 
 ## v1.13.0
 

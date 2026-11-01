@@ -37,6 +37,13 @@ PREFIX = "tmp"
 # (min, max) length of the adderss, if not set, the default is (1, 30)
 # MIN_ADDRESS_LEN = 1
 # MAX_ADDRESS_LEN = 30
+# Default lifetime of newly created addresses in seconds. 0 or unset means the
+# address never expires. When set, new addresses get an expiry time, the frontend
+# shows a countdown, and the cron trigger deletes expired addresses with their mails.
+# DEFAULT_ADDRESS_TTL = 86400
+# Selectable lifetimes (seconds, comma separated, 0 = never expire) offered when
+# creating a new address. Leave unset to hide the selector and always use the default.
+# ADDRESS_TTL_OPTIONS = "600,1800,3600,86400,0"
 # Disable custom email address name, if set true, users cannot input custom email name, will auto generate
 # DISABLE_CUSTOM_ADDRESS_NAME = true
 # Disable address activity keep-alive updates and built-in manual/scheduled cleanup by inactivity. Defaults to false.

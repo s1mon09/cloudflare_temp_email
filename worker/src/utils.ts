@@ -145,6 +145,36 @@ export const getIntValue = (
     return defaultValue;
 }
 
+// 新建邮箱有效期相关配置，单位均为秒，0 表示永久有效
+export const getDefaultAddressTtl = (c: Context<HonoCustomType>): number => {
+    const ttl = getIntValue(c.env.DEFAULT_ADDRESS_TTL, 0);
+    return Number.isInteger(ttl) && ttl > 0 ? ttl : 0;
+}
+
+export const getAddressTtlOptions = (c: Context<HonoCustomType>): number[] => {
+    return getSplitStringListValue(c.env.ADDRESS_TTL_OPTIONS, ",")
+        .map((item) => parseInt(item, 10))
+        .filter((item) => Number.isInteger(item) && item >= 0);
+}
+
+// 校验前端传入的有效期，未传入时返回 undefined，交由默认值处理
+export const getRequestedAddressTtl = (
+    c: Context<HonoCustomType>, ttl: unknown
+): number | undefined => {
+    if (ttl === undefined || ttl === null || ttl === '') {
+        return undefined;
+    }
+    const ttlSeconds = typeof ttl === 'number' ? ttl : parseInt(String(ttl), 10);
+    const options = getAddressTtlOptions(c);
+    if (!Number.isInteger(ttlSeconds) || ttlSeconds < 0) {
+        throw new Error("Invalid address ttl");
+    }
+    if (options.length > 0 && !options.includes(ttlSeconds)) {
+        throw new Error("Invalid address ttl");
+    }
+    return ttlSeconds;
+}
+
 export const getStringArray = (
     value: string | string[] | undefined | null
 ): string[] => {

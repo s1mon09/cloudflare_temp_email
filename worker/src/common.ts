@@ -2,7 +2,7 @@ import { Context } from 'hono';
 import { Jwt } from 'hono/utils/jwt'
 import { WorkerMailerOptions } from 'worker-mailer';
 
-import { getBooleanValue, getDomains, getStringArray, getStringValue, getIntValue, getUserRoles, getDefaultDomains, getJsonSetting, getAnotherWorkerList, hashPassword, getJsonObjectValue, getRandomSubdomainDomains, getDomainMapValue, isDomainOrSubdomain, normalizeDomains, trimLower, isWebhookUrlAllowed } from './utils';
+import { getBooleanValue, getDomains, getStringArray, getStringValue, getIntValue, getUserRoles, getDefaultDomains, getJsonSetting, getAnotherWorkerList, hashPassword, getJsonObjectValue, getRandomSubdomainDomains, getDomainMapValue, isDomainOrSubdomain, normalizeDomains, trimLower, isWebhookUrlAllowed, getDefaultAddressTtl } from './utils';
 import { unbindTelegramByAddress } from './telegram_api/common';
 import { CONSTANTS } from './constants';
 import { AddressCreationSettings, AdminWebhookSettings, ExtractResult, WebhookMail, WebhookSettings } from './models';
@@ -323,19 +323,29 @@ const insertAddressRecord = async (
     c: Context<HonoCustomType>,
     address: string,
     sourceMeta: string | undefined | null,
-    msgs: ReturnType<typeof i18n.getMessagesbyContext>
+    msgs: ReturnType<typeof i18n.getMessagesbyContext>,
+    expiresSeconds?: number
 ): Promise<void> => {
+    const ttlSeconds = typeof expiresSeconds === 'number'
+        ? expiresSeconds
+        : getDefaultAddressTtl(c);
     try {
-        const result = await c.env.DB.prepare(
-            `INSERT INTO address(name, source_meta) VALUES(?, ?)`
-        ).bind(address, sourceMeta).run();
+        const insert = ttlSeconds > 0
+            ? c.env.DB.prepare(
+                `INSERT INTO address(name, source_meta, expires_at) VALUES(?, ?, datetime('now', ?))`
+            ).bind(address, sourceMeta, `+${ttlSeconds} seconds`)
+            : c.env.DB.prepare(
+                `INSERT INTO address(name, source_meta) VALUES(?, ?)`
+            ).bind(address, sourceMeta);
+        const result = await insert.run();
         if (!result.success) {
             throw new Error(msgs.FailedCreateAddressMsg)
         }
     } catch (e) {
         const message = (e as Error).message;
-        // Fallback: source_meta field may not exist, try without it
-        if (message && message.includes("source_meta")) {
+        // Fallback: source_meta / expires_at fields may not exist in older databases,
+        // try without them
+        if (message && (message.includes("source_meta") || message.includes("expires_at"))) {
             const result = await c.env.DB.prepare(
                 `INSERT INTO address(name) VALUES(?)`
             ).bind(address).run();
@@ -360,6 +370,7 @@ export const newAddress = async (
         checkAllowDomains = true,
         enableCheckNameRegex = true,
         sourceMeta = null,
+        expiresSeconds = undefined,
     }: {
         name: string, domain: string | undefined | null,
         enablePrefix: boolean,
@@ -369,6 +380,7 @@ export const newAddress = async (
         checkAllowDomains?: boolean,
         enableCheckNameRegex?: boolean,
         sourceMeta?: string | undefined | null,
+        expiresSeconds?: number | undefined
     }
 ): Promise<{ address: string, jwt: string, password?: string | null, address_id: number }> => {
     const msgs = i18n.getMessagesbyContext(c);
@@ -439,7 +451,7 @@ export const newAddress = async (
         const address = `${name}@${addressDomain}`;
 
         try {
-            await insertAddressRecord(c, address, sourceMeta, msgs);
+            await insertAddressRecord(c, address, sourceMeta, msgs, expiresSeconds);
             await updateAddressUpdatedAt(c, address);
 
             const address_id = await c.env.DB.prepare(
@@ -582,6 +594,14 @@ export const cleanup = async (
                 + `WHERE a.created_at < datetime('now', '-${cleanDays} day') `
                 + `AND NOT EXISTS (SELECT 1 FROM raw_mails AS rm WHERE rm.address = a.name) `
                 + `ORDER BY a.created_at, a.id LIMIT ${cleanupBatchSize})`
+            )
+            break;
+        case "expiredAddress":
+            await batchDeleteAddressWithData(
+                c,
+                `id IN (`
+                + `SELECT id FROM address WHERE expires_at IS NOT NULL AND expires_at < datetime('now') `
+                + `ORDER BY expires_at, id LIMIT ${cleanupBatchSize})`
             )
             break;
         default:

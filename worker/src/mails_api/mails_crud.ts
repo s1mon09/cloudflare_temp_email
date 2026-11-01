@@ -77,14 +77,19 @@ const deleteMail = async (c: Context<HonoCustomType>) => {
 };
 
 const getSettings = async (c: Context<HonoCustomType>) => {
-    const { address } = c.get("jwtPayload")
+    const { address, address_id } = c.get("jwtPayload")
 
     updateAddressUpdatedAt(c, address);
 
     const { balance } = await getSendBalanceState(c, address);
+    const addressRow = await c.env.DB.prepare(
+        `SELECT expires_at FROM address WHERE id = ?`
+    ).bind(address_id).first<{ expires_at: string | null }>();
     return c.json({
         address: address,
         send_balance: balance || 0,
+        // UTC datetime string ("YYYY-MM-DD HH:MM:SS"), null means no expiry
+        expires_at: addressRow?.expires_at || null,
     });
 };
 

@@ -1,7 +1,7 @@
 import { Context } from 'hono'
 
 import i18n from '../i18n';
-import { getBooleanValue, getJsonSetting, checkCfTurnstile, isAddressCountLimitReached } from '../utils';
+import { getBooleanValue, getJsonSetting, checkCfTurnstile, isAddressCountLimitReached, getRequestedAddressTtl } from '../utils';
 import { newAddress, getAddressPrefix, generateRandomName } from '../common'
 import { CONSTANTS } from '../constants'
 
@@ -27,7 +27,7 @@ const createNewAddress = async (c: Context<HonoCustomType>) => {
     }
 
     // eslint-disable-next-line prefer-const
-    let { name, domain, cf_token, enableRandomSubdomain } = await c.req.json();
+    let { name, domain, cf_token, enableRandomSubdomain, ttl } = await c.req.json();
     // check cf turnstile
     try {
         await checkCfTurnstile(c, cf_token);
@@ -53,6 +53,7 @@ const createNewAddress = async (c: Context<HonoCustomType>) => {
     }
     try {
         const addressPrefix = await getAddressPrefix(c);
+        const expiresSeconds = getRequestedAddressTtl(c, ttl);
         const sourceMeta = c.req.header('CF-Connecting-IP')
             || c.req.header('X-Forwarded-For')?.split(',')[0]?.trim()
             || c.req.header('X-Real-IP')
@@ -63,7 +64,8 @@ const createNewAddress = async (c: Context<HonoCustomType>) => {
             enableRandomSubdomain: getBooleanValue(enableRandomSubdomain),
             checkLengthByConfig: true,
             addressPrefix,
-            sourceMeta
+            sourceMeta,
+            expiresSeconds
         });
         return c.json(res);
     } catch (e) {

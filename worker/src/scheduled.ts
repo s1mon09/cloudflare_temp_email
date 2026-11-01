@@ -7,6 +7,13 @@ import { executeCustomSqlCleanup } from './admin_api/cleanup_api';
 
 export async function scheduled(event: ScheduledEvent, env: Bindings, ctx: any) {
     console.log("Scheduled event: ", event);
+    // Mailboxes that were created with a lifetime (expires_at) are removed once
+    // expired, independent of the admin cleanup settings below.
+    await cleanup(
+        { env: env, } as Context<HonoCustomType>,
+        "expiredAddress",
+        0
+    );
     const autoCleanupSetting = await getJsonSetting<CleanupSettings>(
         { env: env, } as Context<HonoCustomType>,
         CONSTANTS.AUTO_CLEANUP_KEY

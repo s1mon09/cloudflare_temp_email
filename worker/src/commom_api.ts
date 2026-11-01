@@ -30,6 +30,8 @@ api.get('/open_api/settings', async (c) => {
         "addressRegex": utils.getStringValue(c.env.ADDRESS_REGEX),
         "minAddressLen": utils.getIntValue(c.env.MIN_ADDRESS_LEN, 1),
         "maxAddressLen": utils.getIntValue(c.env.MAX_ADDRESS_LEN, 30),
+        "defaultAddressTtl": utils.getDefaultAddressTtl(c),
+        "addressTtlOptions": utils.getAddressTtlOptions(c),
         "defaultDomains": utils.getDefaultDomains(c),
         "domains": utils.getDomains(c),
         "randomSubdomainDomains": utils.getRandomSubdomainDomains(c),

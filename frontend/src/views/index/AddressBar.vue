@@ -12,6 +12,7 @@ import LocalAddress from './LocalAddress.vue'
 import AddressManagement from '../user/AddressManagement.vue'
 import { getRouterPathWithLang } from '../../utils'
 import AddressSelect from '../../components/AddressSelect.vue'
+import AddressExpiry from '../../components/AddressExpiry.vue'
 import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
 
 const router = useRouter()
@@ -41,15 +42,18 @@ onMounted(async () => {
         </n-card>
         <div v-else-if="settings.address">
             <n-alert type="info" :show-icon="false" :bordered="false">
-                <AddressSelect>
-                    <template #actions>
-                        <n-button class="address-manage" size="small" tertiary type="primary"
-                            @click="showAddressManage = true">
-                            <n-icon :component="ExchangeAlt" />
-                            {{ t('addressManage') }}
-                        </n-button>
-                    </template>
-                </AddressSelect>
+                <n-flex vertical align="center" :size="6">
+                    <AddressSelect>
+                        <template #actions>
+                            <n-button class="address-manage" size="small" tertiary type="primary"
+                                @click="showAddressManage = true">
+                                <n-icon :component="ExchangeAlt" />
+                                {{ t('addressManage') }}
+                            </n-button>
+                        </template>
+                    </AddressSelect>
+                    <AddressExpiry />
+                </n-flex>
             </n-alert>
         </div>
         <div v-else-if="isTelegram">

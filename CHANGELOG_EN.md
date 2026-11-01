@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Mailbox Expiry| Add `DEFAULT_ADDRESS_TTL` (default lifetime in seconds) and `ADDRESS_TTL_OPTIONS` (selectable lifetimes) so users can choose a lifetime when creating a mailbox; new addresses store an expiry time, the frontend shows a countdown (highlighted within the last hour and after expiry), and the scheduled task deletes expired mailboxes with their mails. Mailboxes never expire when unset
+- feat: |CI| Add a fast CI gate for pushes to main and pull requests, caching pnpm dependencies and validating worker (lint + build) and frontend (test + build)
 - feat: |Inbox| When mail read status is enabled, show an unread-count badge on the browser title and favicon (including simple mode); it updates in real time on read/unread toggles and clears when leaving the inbox
 - feat: |User System| Add `DISABLE_USER_SYSTEM` to block user APIs, disable user admin tokens, and hide user interfaces
 - feat: |Mailbox Login| Add a password-only login-page switch that requires mailbox passwords; preserve existing credentials, login links, API access, and JWT lifetimes
@@ -30,6 +32,8 @@
 - docs: |User| Document mailbox binding, bound mailbox credential retrieval, and unbinding APIs with dual authentication requirements and request examples
 
 - perf: |CI| Organize test suites and run a dedicated Webhook UI group alongside API, other browser tests and SMTP/IMAP, with only each group's required services, separate unit/WASM tests and one aggregate check
+
+- feat: |CI| Add a fast CI gate on pushes to main and pull requests: Worker ESLint and build, frontend unit tests and build, with pnpm dependency caching and in-progress cancellation on new commits
 
 ## v1.13.0
 
