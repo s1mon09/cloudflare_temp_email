@@ -580,8 +580,8 @@ onBeforeUnmount(() => {
               {{ t('autoRefresh') }}
             </template>
           </n-switch>
-          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="8"
-            :width="34" :show-indicator="false" status="info">
+          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="4"
+            :width="22" :show-indicator="false" status="info" class="refresh-progress">
             <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
           </n-progress>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
@@ -691,8 +691,8 @@ onBeforeUnmount(() => {
             {{ t('autoRefresh') }}
           </template>
         </n-switch>
-        <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="8"
-          :width="28" :show-indicator="false" status="info">
+        <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="4"
+          :width="20" :show-indicator="false" status="info" class="refresh-progress">
           <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
         </n-progress>
         <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
@@ -858,10 +858,15 @@ pre {
   }
 }
 
-/* 自动刷新倒计时：环形进度内展示剩余秒数 */
+/* 自动刷新倒计时：小型环形进度，内圈展示剩余秒数 */
+.refresh-progress {
+  flex: 0 0 auto;
+}
+
 .refresh-countdown {
-  font-size: 12px;
+  font-size: 10px;
   line-height: 1;
   color: var(--n-text-color-3);
+  font-variant-numeric: tabular-nums;
 }
 </style>
