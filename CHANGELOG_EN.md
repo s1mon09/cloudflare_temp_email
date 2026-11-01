@@ -29,6 +29,12 @@
 
 ### Improvements
 
+- perf: |First Load| Lazy-load the user page, inbox, and mail parser, and load locale messages on demand, reducing the initial main bundle from about 611KB to about 240KB
+
+- fix: |UX| Use request counting plus a 300ms delay for the global loading overlay, fixing early dismissal with concurrent requests; inbox refresh no longer covers the whole page while parsing mail
+
+- perf: |Inbox| Cache parsed mails so automatic polling only parses newly arrived mail, reducing repeated WASM parsing
+
 - feat: |UX| Simple mode now shows a mail loading skeleton, an inline error with one-click retry, and a refresh action for an empty inbox; narrow screens get tighter page margins, a responsive mailbox-management modal, and larger tab/button touch targets, while the loading label is localized
 
 - style: |Inbox| Shrink the auto-refresh countdown ring and its inner label to take less toolbar space

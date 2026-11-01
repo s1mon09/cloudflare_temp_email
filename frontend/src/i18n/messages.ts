@@ -2,22 +2,18 @@ import { MESSAGE_REGISTRY, getMessageSource } from './message-registry'
 
 import type { MessageKey, MessageNamespace } from './message-registry'
 
-import { deMessages } from './locales/source/de'
-import { esMessages } from './locales/source/es'
-import { jaMessages } from './locales/source/ja'
-import { ptBRMessages } from './locales/source/ptBR'
-
 import type { SupportedLocale } from './locale-registry'
 
 type LocaleTree = Record<string, unknown>
 type SourceLocale = Extract<SupportedLocale, 'en' | 'zh'>
 type AdditionalLocale = Exclude<SupportedLocale, SourceLocale>
 
-const additionalLocaleSources: Record<AdditionalLocale, Record<string, string>> = {
-  es: esMessages,
-  'pt-BR': ptBRMessages,
-  ja: jaMessages,
-  de: deMessages,
+// 额外语言按需加载，避免全部打进首屏主包
+const additionalLocaleLoaders: Record<AdditionalLocale, () => Promise<Record<string, string>>> = {
+  es: () => import('./locales/source/es').then(({ esMessages }) => esMessages),
+  'pt-BR': () => import('./locales/source/ptBR').then(({ ptBRMessages }) => ptBRMessages),
+  ja: () => import('./locales/source/ja').then(({ jaMessages }) => jaMessages),
+  de: () => import('./locales/source/de').then(({ deMessages }) => deMessages),
 }
 
 const setNestedValue = (target: LocaleTree, path: string, value: unknown) => {
@@ -53,29 +49,34 @@ const buildSourceLocaleMessages = (locale: SourceLocale) => {
   return messages
 }
 
-const buildAdditionalLocaleMessages = (locale: AdditionalLocale) => {
+const buildAdditionalLocaleMessages = (source: Record<string, string>) => {
   const messages: LocaleTree = {}
 
-  for (const [key, value] of Object.entries(additionalLocaleSources[locale])) {
+  for (const [key, value] of Object.entries(source)) {
     setNestedValue(messages, key, value)
   }
 
   return messages
 }
 
-export const I18N_MESSAGES: Record<SupportedLocale, LocaleTree> = {
+export const I18N_MESSAGES: Partial<Record<SupportedLocale, LocaleTree>> = {
   zh: buildSourceLocaleMessages('zh'),
   en: buildSourceLocaleMessages('en'),
-  es: buildAdditionalLocaleMessages('es'),
-  'pt-BR': buildAdditionalLocaleMessages('pt-BR'),
-  ja: buildAdditionalLocaleMessages('ja'),
-  de: buildAdditionalLocaleMessages('de'),
 }
 
-export const getLocalizedMessage = (
-  locale: AdditionalLocale,
-  namespace: MessageNamespace,
-  key: string,
-) => {
-  return additionalLocaleSources[locale][`${namespace}.${key}`]
+const additionalLocaleCache = new Map<AdditionalLocale, LocaleTree>()
+
+// 按需加载并缓存额外语言文案；中文/英文为主包内置语言，直接返回
+export const loadLocaleMessages = async (locale: SupportedLocale): Promise<LocaleTree> => {
+  const builtIn = I18N_MESSAGES[locale]
+  if (builtIn) return builtIn
+
+  const additionalLocale = locale as AdditionalLocale
+  const cached = additionalLocaleCache.get(additionalLocale)
+  if (cached) return cached
+
+  const source = await additionalLocaleLoaders[additionalLocale]()
+  const messages = buildAdditionalLocaleMessages(source)
+  additionalLocaleCache.set(additionalLocale, messages)
+  return messages
 }

@@ -80,6 +80,37 @@ const count = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
 const loadError = ref(null)
+const refreshLoading = ref(false)
+
+// 已解析邮件缓存：轮询时复用解析结果，只解析新增邮件，避免重复执行 WASM 解析
+const PARSED_MAIL_CACHE_LIMIT = 80
+const parsedMailCache = new Map()
+
+const revokeMailAttachments = (mail) => {
+  mail?.attachments?.forEach((attachment) => {
+    if (attachment?.url) URL.revokeObjectURL(attachment.url)
+  })
+}
+
+const processMailWithCache = async (item) => {
+  const cached = parsedMailCache.get(item.id)
+  if (cached) {
+    // 邮件正文不可变，仅同步每次请求可能变化的字段（如已读状态）
+    cached.is_unread = item.is_unread
+    cached.checked = false
+    return cached
+  }
+
+  const processed = await processItem(item)
+  processed.checked = false
+  parsedMailCache.set(processed.id, processed)
+  if (parsedMailCache.size > PARSED_MAIL_CACHE_LIMIT) {
+    const oldestId = parsedMailCache.keys().next().value
+    revokeMailAttachments(parsedMailCache.get(oldestId))
+    parsedMailCache.delete(oldestId)
+  }
+  return processed
+}
 
 // 自动刷新倒计时可视化：环形进度表示距下次刷新的进程（0 → 100%）
 const refreshProgress = computed(() => {
@@ -269,7 +300,7 @@ const setupAutoRefresh = async (autoRefresh) => {
       // 页面不可见或断网时暂停轮询，避免空转请求；恢复后倒计时继续
       if (document.hidden) return;
       if (typeof navigator !== 'undefined' && !navigator.onLine) return;
-      if (loading.value) return;
+      if (loading.value || refreshLoading.value) return;
       autoRefreshInterval.value--;
       if (autoRefreshInterval.value <= 0) {
         autoRefreshInterval.value = configAutoRefreshInterval.value;
@@ -293,17 +324,15 @@ watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
 })
 
 const refresh = async () => {
+  if (refreshLoading.value) return
   const previousMailId = curMail.value?.id;
+  refreshLoading.value = true
   try {
     const { results, count: totalCount, unreadCount: unreadTotal } = await props.fetchMailData(
       pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
     );
-    loading.value = true;
     loadError.value = null;
-    rawData.value = await Promise.all(results.map(async (item) => {
-      item.checked = false;
-      return await processItem(item);
-    }));
+    rawData.value = await Promise.all(results.map(processMailWithCache));
     handleNewMailNotification(!notifyPrimed);
     notifyPrimed = true;
     if (typeof totalCount === 'number') {
@@ -323,7 +352,7 @@ const refresh = async () => {
     loadError.value = error.message || "error";
     console.error(error);
   } finally {
-    loading.value = false;
+    refreshLoading.value = false
   }
 };
 
@@ -518,6 +547,9 @@ onBeforeUnmount(() => {
   clearTimeout(searchDebounceTimer)
   // 离开收件箱时移除角标，避免影响其他页面
   clearUnreadBadge()
+  // 释放缓存邮件附件的 blob URL，避免长时间占用内存
+  parsedMailCache.forEach(revokeMailAttachments)
+  parsedMailCache.clear()
 })
 </script>
 

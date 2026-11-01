@@ -25,6 +25,33 @@ const instance = axios.create({
 
 const responseInterceptors = [createUserAccessTokenInterceptor(instance)];
 
+// 全局 loading 采用「请求计数 + 延迟显示」：
+// - 计数避免并发请求先完成导致遮罩提前关闭
+// - 延迟避免快速请求造成整页遮罩闪动
+const LOADING_SHOW_DELAY = 300;
+let pendingRequestCount = 0;
+let loadingTimer = null;
+
+const beginGlobalLoading = () => {
+    if (pendingRequestCount === 0) {
+        loadingTimer = setTimeout(() => {
+            loadingTimer = null;
+            if (pendingRequestCount > 0) loading.value = true;
+        }, LOADING_SHOW_DELAY);
+    }
+    pendingRequestCount++;
+};
+
+const endGlobalLoading = () => {
+    pendingRequestCount = Math.max(0, pendingRequestCount - 1);
+    if (pendingRequestCount > 0) return;
+    if (loadingTimer) {
+        clearTimeout(loadingTimer);
+        loadingTimer = null;
+    }
+    loading.value = false;
+};
+
 const interceptResponse = async (path, response) => {
     for (const { matches, handle } of responseInterceptors) {
         if (matches(path, response)) return await handle(response);
@@ -34,7 +61,7 @@ const interceptResponse = async (path, response) => {
 
 const apiRequest = async (path, options = {}) => {
     const showLoading = options.showLoading !== false;
-    if (showLoading) loading.value = true;
+    if (showLoading) beginGlobalLoading();
     try {
         // Get browser fingerprint for request tracking
         const fingerprint = await getFingerprint();
@@ -81,7 +108,7 @@ const apiRequest = async (path, options = {}) => {
         }
         throw error;
     } finally {
-        if (showLoading) loading.value = false;
+        if (showLoading) endGlobalLoading();
     }
 }
 

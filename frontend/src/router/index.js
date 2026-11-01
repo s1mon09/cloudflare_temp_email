@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Index from '../views/Index.vue'
-import User from '../views/User.vue'
-import UserOauth2Callback from '../views/user/UserOauth2Callback.vue'
-import i18n from '../i18n'
+import i18n, { ensureLocaleMessages } from '../i18n'
 import { useGlobalState } from '../store'
 import {
     DEFAULT_LOCALE,
@@ -17,6 +15,8 @@ const { jwt, preferredLocale } = useGlobalState()
 const Redeem = () => import('../views/Redeem.vue')
 const Admin = () => import('../views/Admin.vue')
 const TelegramMail = () => import('../views/telegram/Mail.vue')
+const User = () => import('../views/User.vue')
+const UserOauth2Callback = () => import('../views/user/UserOauth2Callback.vue')
 
 // 每个页面同时注册「带语言前缀」与「不带前缀」两条记录。
 // 不使用 alias：alias 无法为无参路径追加 :lang 参数，会触发 Vue Router 警告。
@@ -45,9 +45,11 @@ const router = createRouter({
     ]
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const routeLocale = resolveSupportedLocale(to.path.split('/')[1])
     const resolvedLocale = routeLocale || DEFAULT_LOCALE
+    // 额外语言文案按需加载，加载完成后再切换，避免短暂显示兜底语言
+    await ensureLocaleMessages(resolvedLocale)
     i18n.global.locale.value = resolvedLocale
 
     if (routeLocale) {

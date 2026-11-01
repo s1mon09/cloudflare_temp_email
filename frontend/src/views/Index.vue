@@ -9,9 +9,9 @@ import { useIsMobile } from '../utils/composables'
 import { FullscreenExitOutlined } from '@vicons/material'
 
 import AddressBar from './index/AddressBar.vue';
-import MailBox from '../components/MailBox.vue';
 
 // 非首屏（切换 tab / 简易模式才用）的组件按需加载，缩小初始包体积
+const MailBox = defineAsyncComponent(() => import('../components/MailBox.vue'));
 const SendBox = defineAsyncComponent(() => import('../components/SendBox.vue'));
 const AutoReply = defineAsyncComponent(() => import('./index/AutoReply.vue'));
 const AccountSettings = defineAsyncComponent(() => import('./index/AccountSettings.vue'));
@@ -21,16 +21,12 @@ const Attachment = defineAsyncComponent(() => import('./index/Attachment.vue'));
 const About = defineAsyncComponent(() => import('./common/About.vue'));
 const SimpleIndex = defineAsyncComponent(() => import('./index/SimpleIndex.vue'));
 
-const { loading, settings, openSettings, indexTab, globalTabplacement, useSimpleIndex } = useGlobalState()
+const { settings, openSettings, indexTab, globalTabplacement, useSimpleIndex } = useGlobalState()
 const message = useMessage()
 const route = useRoute()
 const isMobile = useIsMobile()
 
-const SendMail = defineAsyncComponent(() => {
-  loading.value = true;
-  return import('./index/SendMail.vue')
-    .finally(() => loading.value = false);
-});
+const SendMail = defineAsyncComponent(() => import('./index/SendMail.vue'))
 
 const { t } = useScopedI18n('views.Index')
 
