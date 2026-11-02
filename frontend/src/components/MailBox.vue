@@ -628,10 +628,10 @@ onBeforeUnmount(() => {
             </template>
             {{ t('notifyEnable') }}
           </n-button>
-          <n-input v-if="showFilterInput" v-model:value="searchKeyword"
-            :placeholder="t('keywordQueryTip')" style="width: 200px; display: flex; align-items: center;"
-            clearable />
         </n-space>
+        <div v-if="showFilterInput" class="mail-toolbar-filter">
+          <n-input v-model:value="searchKeyword" :placeholder="t('keywordQueryTip')" clearable />
+        </div>
       </div>
       <n-split class="left" direction="horizontal" :max="0.75" :min="0" :resize-trigger-size="8"
         :default-size="mailboxSplitSize" :on-update:size="onSpiltSizeChange" v-if="!mailListView || curMail">
@@ -902,6 +902,12 @@ pre {
 
 .auto-refresh-control--mobile {
   height: 28px;
+}
+
+/* 收件箱筛选框独立成行，避免挤压工具栏控件导致换行 */
+.mail-toolbar-filter {
+  max-width: 320px;
+  margin-top: 8px;
 }
 
 .refresh-progress {
