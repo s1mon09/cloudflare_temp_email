@@ -598,24 +598,26 @@ onBeforeUnmount(() => {
             {{ t('downloadMail') }}
           </n-button>
         </n-space>
-        <n-space v-else align="center">
+        <n-space v-else align="center" :size="12">
           <n-button @click="multiActionModeClick(true)" type="primary" tertiary>
             {{ t('multiAction') }}
           </n-button>
           <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" :page-sizes="[20, 50, 100]"
-            show-size-picker />
-          <n-switch v-model:value="autoRefresh" :round="false">
-            <template #checked>
-              {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
-            </template>
-            <template #unchecked>
-              {{ t('autoRefresh') }}
-            </template>
-          </n-switch>
-          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="4"
-            :width="22" :show-indicator="false" status="info" class="refresh-progress">
-            <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
-          </n-progress>
+            size="large" show-size-picker />
+          <n-flex class="auto-refresh-control" align="center" :size="8">
+            <n-switch v-model:value="autoRefresh" size="large" :round="false">
+              <template #checked>
+                {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
+              </template>
+              <template #unchecked>
+                {{ t('autoRefresh') }}
+              </template>
+            </n-switch>
+            <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="3"
+              :width="30" :show-indicator="false" status="info" class="refresh-progress">
+              <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
+            </n-progress>
+          </n-flex>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
             {{ t('refresh') }}
           </n-button>
@@ -714,19 +716,21 @@ onBeforeUnmount(() => {
     </div>
     <div class="left" v-else>
       <n-space justify="space-between" align="center" :size="[8, 8]">
-        <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" simple size="small" />
-        <n-switch v-model:value="autoRefresh" size="small" :round="false">
-          <template #checked>
-            {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
-          </template>
-          <template #unchecked>
-            {{ t('autoRefresh') }}
-          </template>
-        </n-switch>
-        <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="4"
-          :width="20" :show-indicator="false" status="info" class="refresh-progress">
-          <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
-        </n-progress>
+        <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" simple size="medium" />
+        <n-flex class="auto-refresh-control auto-refresh-control--mobile" align="center" :size="6">
+          <n-switch v-model:value="autoRefresh" size="medium" :round="false">
+            <template #checked>
+              {{ t('refreshAfter', { msg: autoRefreshInterval }) }}
+            </template>
+            <template #unchecked>
+              {{ t('autoRefresh') }}
+            </template>
+          </n-switch>
+          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="3"
+            :width="24" :show-indicator="false" status="info" class="refresh-progress">
+            <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
+          </n-progress>
+        </n-flex>
         <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
           {{ t('refresh') }}
         </n-button>
@@ -890,15 +894,28 @@ pre {
   }
 }
 
-/* 自动刷新倒计时：小型环形进度，内圈展示剩余秒数 */
+/* 自动刷新倒计时：小型环形进度，与同排按钮高度对齐 */
+.auto-refresh-control {
+  flex: 0 0 auto;
+  height: 34px;
+}
+
+.auto-refresh-control--mobile {
+  height: 28px;
+}
+
 .refresh-progress {
   flex: 0 0 auto;
 }
 
 .refresh-countdown {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   color: var(--n-text-color-3);
   font-variant-numeric: tabular-nums;
+}
+
+.auto-refresh-control--mobile .refresh-countdown {
+  font-size: 10px;
 }
 </style>
