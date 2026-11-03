@@ -112,14 +112,7 @@ const processMailWithCache = async (item) => {
   return processed
 }
 
-// 自动刷新倒计时可视化：环形进度表示距下次刷新的进程（0 → 100%）
-const refreshProgress = computed(() => {
-  const total = Number(configAutoRefreshInterval.value) || 0
-  if (!autoRefresh.value || total <= 0) return 0
-  const remaining = Math.min(total, Math.max(0, autoRefreshInterval.value))
-  return Math.round(((total - remaining) / total) * 100)
-})
-
+// 自动刷新倒计时可视化已移除，倒计时秒数直接显示在开关文案中
 const mailListPreviewLineClampValue = computed(() => {
   const value = Number(mailListPreviewLineClamp.value)
   if (!Number.isFinite(value)) return 0
@@ -613,10 +606,6 @@ onBeforeUnmount(() => {
                 {{ t('autoRefresh') }}
               </template>
             </n-switch>
-            <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="3"
-              :width="30" :show-indicator="false" status="info" class="refresh-progress">
-              <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
-            </n-progress>
           </n-flex>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
             {{ t('refresh') }}
@@ -726,10 +715,6 @@ onBeforeUnmount(() => {
               {{ t('autoRefresh') }}
             </template>
           </n-switch>
-          <n-progress v-if="autoRefresh" type="circle" :percentage="refreshProgress" :stroke-width="3"
-            :width="24" :show-indicator="false" status="info" class="refresh-progress">
-            <span class="refresh-countdown">{{ autoRefreshInterval }}</span>
-          </n-progress>
         </n-flex>
         <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
           {{ t('refresh') }}
@@ -894,7 +879,7 @@ pre {
   }
 }
 
-/* 自动刷新倒计时：小型环形进度，与同排按钮高度对齐 */
+/* 自动刷新开关与同排按钮高度对齐 */
 .auto-refresh-control {
   flex: 0 0 auto;
   height: 34px;
@@ -908,20 +893,5 @@ pre {
 .mail-toolbar-filter {
   max-width: 320px;
   margin-top: 8px;
-}
-
-.refresh-progress {
-  flex: 0 0 auto;
-}
-
-.refresh-countdown {
-  font-size: 11px;
-  line-height: 1;
-  color: var(--n-text-color-3);
-  font-variant-numeric: tabular-nums;
-}
-
-.auto-refresh-control--mobile .refresh-countdown {
-  font-size: 10px;
 }
 </style>

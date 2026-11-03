@@ -37,7 +37,7 @@
 
 - feat: |UX| Simple mode now shows a mail loading skeleton, an inline error with one-click retry, and a refresh action for an empty inbox; narrow screens get tighter page margins, a responsive mailbox-management modal, and larger tab/button touch targets, while the loading label is localized
 
-- style: |Inbox| Align toolbar control heights: pagination and buttons now share 34px, and the auto-refresh countdown ring is centered at 30px; the filter input gets its own row to prevent wrapping, and mobile pagination, switch, and ring share a 28px row height
+- style: |Inbox| Remove the auto-refresh countdown ring so remaining seconds appear only in the switch label; align toolbar controls at 34px, move the filter input to its own row, and keep mobile controls at a 28px row height
 
 - docs: |User| Document mailbox binding, bound mailbox credential retrieval, and unbinding APIs with dual authentication requirements and request examples
 
