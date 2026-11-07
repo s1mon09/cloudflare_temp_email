@@ -98,10 +98,24 @@ const HTML_LANG_MAP = {
     'pt-BR': 'pt-BR',
 }
 
+// 部署后旧页签可能请求到已失效的懒加载 chunk：自动刷新一次，避免白屏
+router.onError((error, to) => {
+    if (!/dynamically imported module|Importing a module script failed|Failed to fetch/i.test(error?.message || '')) {
+        return
+    }
+    if (sessionStorage.getItem('chunk-reload')) {
+        return
+    }
+    sessionStorage.setItem('chunk-reload', '1')
+    window.location.assign(to?.fullPath || window.location.href)
+})
+
 // 按当前路由更新 lang 与 canonical，避免多语言 URL 被判为重复内容
 // 标题由 Header.vue 的 useHead 统一按 route.meta.titleKey 管理
 router.afterEach((to) => {
     if (typeof document === 'undefined') return
+
+    sessionStorage.removeItem('chunk-reload')
 
     const locale = i18n.global.locale.value
     document.documentElement.lang = HTML_LANG_MAP[locale] || 'zh-CN'

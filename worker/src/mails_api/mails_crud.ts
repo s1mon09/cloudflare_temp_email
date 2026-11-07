@@ -32,19 +32,17 @@ const listMails = async (c: Context<HonoCustomType>) => {
     // 避免每分钟重复下载并解析整页原始邮件。
     const sinceId = Number.parseInt(since_id || '');
     if (Number.isInteger(sinceId) && sinceId >= 0 && Number.parseInt(offset) === 0) {
-        const latestId = await c.env.DB.prepare(
-            `SELECT id FROM raw_mails where address = ? order by id desc limit 1`
-        ).bind(address).first("id");
-        if (!latestId || Number(latestId) <= sinceId) {
-            const [count, unreadCount] = await Promise.all([
-                c.env.DB.prepare(`SELECT count(*) as count FROM raw_mails where address = ?`)
-                    .bind(address).first("count"),
-                unread
-                    ? c.env.DB.prepare(unread.query).bind(...unread.params).first("count")
-                    : Promise.resolve(undefined),
-            ]);
+        // 一次查询同时拿到最新 id 与总数，未变化时再补一次未读数即可返回
+        const stats = await c.env.DB.prepare(
+            `SELECT count(*) as count, max(id) as latestId FROM raw_mails where address = ?`
+        ).bind(address).first<{ count: number; latestId: number | null }>();
+        const latestId = Number(stats?.latestId || 0);
+        if (latestId <= sinceId) {
+            const unreadCount = unread
+                ? await c.env.DB.prepare(unread.query).bind(...unread.params).first("count")
+                : undefined;
             return c.json({
-                results: [], count, changed: false,
+                results: [], count: stats?.count ?? 0, changed: false,
                 ...(unreadCount != null ? { unreadCount } : {})
             });
         }

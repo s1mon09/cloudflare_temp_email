@@ -29,6 +29,10 @@
 
 ### Improvements
 
+- fix: |Stability| When an old tab requests a lazy-loaded asset that no longer exists after a deploy, the page reloads once automatically instead of showing a blank screen
+
+- perf: |Inbox| Incremental polling now fetches the latest mail id and total count in one D1 query, so an unchanged poll costs only two queries
+
 - perf: |Inbox| Make auto-refresh incremental: when no new mail exists the API returns only totals and the unread count, so the client skips downloading and parsing a full page of raw mails; a changed total triggers a full refresh
 
 - feat: |Inbox| Show an inline error with a retry action when loading fails; use a unified empty state with a refresh action, and reuse the same credential modal in simple mode
