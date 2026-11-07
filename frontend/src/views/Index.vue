@@ -37,8 +37,8 @@ const fetchMailData = async (limit, offset, keyword, options = {}) => {
     return { results: [], count: 0 };
   }
   const keywordQuery = keyword ? `&keyword=${encodeURIComponent(keyword)}` : '';
-  // 增量轮询：带上当前最新邮件 id，服务端在无新邮件时只返回计数
-  const sinceQuery = options?.sinceId ? `&since_id=${options.sinceId}` : '';
+  // 增量轮询：带上当前最新邮件 id（空邮箱为 0），服务端在无新邮件时只返回计数
+  const sinceQuery = options?.sinceId != null ? `&since_id=${options.sinceId}` : '';
   return await api.fetch(`/api/mails?limit=${limit}&offset=${offset}${keywordQuery}${sinceQuery}`);
 };
 

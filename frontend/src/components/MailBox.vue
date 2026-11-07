@@ -322,13 +322,13 @@ const refresh = async ({ incremental = false } = {}) => {
   refreshLoading.value = true
   let needsFullRefresh = false
   try {
-    // 定时轮询时带上最新邮件 id：无新邮件则服务端只返回计数，跳过整页 raw 下载与解析
-    const sinceId = incremental && page.value === 1 && !searchKeyword.value && rawData.value.length > 0
-      ? rawData.value[0].id
+    // 定时轮询时带上最新邮件 id（空邮箱用 0）：无新邮件则服务端只返回计数
+    const sinceId = incremental && page.value === 1 && !searchKeyword.value
+      ? (rawData.value[0]?.id ?? 0)
       : undefined;
     const { results, count: totalCount, unreadCount: unreadTotal, changed } = await props.fetchMailData(
       pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value,
-      sinceId ? { sinceId } : {}
+      sinceId != null ? { sinceId } : {}
     );
     loadError.value = null;
     if (changed === false) {
