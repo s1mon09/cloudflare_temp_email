@@ -11,7 +11,7 @@ const listMails = async (c: Context<HonoCustomType>) => {
     if (!address) {
         return c.json({ "error": "No address" }, 400)
     }
-    const { limit, offset, keyword } = c.req.query();
+    const { limit, offset, keyword, since_id } = c.req.query();
     if (Number.parseInt(offset) <= 0) updateAddressUpdatedAt(c, address);
     // 开启已读状态时，顺带返回未读数，供前端标题/favicon 角标使用
     const unread = getBooleanValue(c.env.ENABLE_MAIL_READ_STATUS) ? {
@@ -27,6 +27,27 @@ const listMails = async (c: Context<HonoCustomType>) => {
             `SELECT count(*) as count FROM raw_mails where ${searchClause}`,
             [address, pattern, pattern], limit, offset, undefined, unread
         );
+    }
+    // 增量轮询：客户端带上当前最新邮件 id，若没有更新的邮件则只返回计数，
+    // 避免每分钟重复下载并解析整页原始邮件。
+    const sinceId = Number.parseInt(since_id || '');
+    if (Number.isInteger(sinceId) && sinceId >= 0 && Number.parseInt(offset) === 0) {
+        const latestId = await c.env.DB.prepare(
+            `SELECT id FROM raw_mails where address = ? order by id desc limit 1`
+        ).bind(address).first("id");
+        if (!latestId || Number(latestId) <= sinceId) {
+            const [count, unreadCount] = await Promise.all([
+                c.env.DB.prepare(`SELECT count(*) as count FROM raw_mails where address = ?`)
+                    .bind(address).first("count"),
+                unread
+                    ? c.env.DB.prepare(unread.query).bind(...unread.params).first("count")
+                    : Promise.resolve(undefined),
+            ]);
+            return c.json({
+                results: [], count, changed: false,
+                ...(unreadCount != null ? { unreadCount } : {})
+            });
+        }
     }
     return await handleMailListQuery(c,
         `SELECT * FROM raw_mails where address = ?`,

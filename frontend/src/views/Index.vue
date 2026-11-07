@@ -30,14 +30,16 @@ const SendMail = defineAsyncComponent(() => import('./index/SendMail.vue'))
 
 const { t } = useScopedI18n('views.Index')
 
-const fetchMailData = async (limit, offset, keyword) => {
+const fetchMailData = async (limit, offset, keyword, options = {}) => {
   if (mailIdQuery.value > 0) {
     const singleMail = await api.fetch(`/api/mail/${mailIdQuery.value}`);
     if (singleMail) return { results: [singleMail], count: 1 };
     return { results: [], count: 0 };
   }
   const keywordQuery = keyword ? `&keyword=${encodeURIComponent(keyword)}` : '';
-  return await api.fetch(`/api/mails?limit=${limit}&offset=${offset}${keywordQuery}`);
+  // 增量轮询：带上当前最新邮件 id，服务端在无新邮件时只返回计数
+  const sinceQuery = options?.sinceId ? `&since_id=${options.sinceId}` : '';
+  return await api.fetch(`/api/mails?limit=${limit}&offset=${offset}${keywordQuery}${sinceQuery}`);
 };
 
 const deleteMail = async (curMailId) => {

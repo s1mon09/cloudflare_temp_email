@@ -297,7 +297,7 @@ const setupAutoRefresh = async (autoRefresh) => {
       autoRefreshInterval.value--;
       if (autoRefreshInterval.value <= 0) {
         autoRefreshInterval.value = configAutoRefreshInterval.value;
-        await backFirstPageAndRefresh();
+        await backFirstPageAndRefresh({ incremental: true });
       }
     }, 1000)
   } else {
@@ -316,30 +316,47 @@ watch([page, pageSize], async ([page, pageSize], [oldPage, oldPageSize]) => {
   }
 })
 
-const refresh = async () => {
+const refresh = async ({ incremental = false } = {}) => {
   if (refreshLoading.value) return
   const previousMailId = curMail.value?.id;
   refreshLoading.value = true
+  let needsFullRefresh = false
   try {
-    const { results, count: totalCount, unreadCount: unreadTotal } = await props.fetchMailData(
-      pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value
+    // 定时轮询时带上最新邮件 id：无新邮件则服务端只返回计数，跳过整页 raw 下载与解析
+    const sinceId = incremental && page.value === 1 && !searchKeyword.value && rawData.value.length > 0
+      ? rawData.value[0].id
+      : undefined;
+    const { results, count: totalCount, unreadCount: unreadTotal, changed } = await props.fetchMailData(
+      pageSize.value, (page.value - 1) * pageSize.value, searchKeyword.value,
+      sinceId ? { sinceId } : {}
     );
     loadError.value = null;
-    rawData.value = await Promise.all(results.map(processMailWithCache));
-    handleNewMailNotification(!notifyPrimed);
-    notifyPrimed = true;
-    if (typeof totalCount === 'number') {
-      count.value = totalCount;
+    if (changed === false) {
+      // 计数变化说明有删除或已读状态变更，需要再拉一次完整列表
+      needsFullRefresh = (typeof totalCount === 'number' && totalCount !== count.value)
+        || (typeof unreadTotal === 'number' && unreadTotal !== unreadCount.value);
+      if (!needsFullRefresh) {
+        if (typeof totalCount === 'number') count.value = totalCount;
+        if (typeof unreadTotal === 'number') setUnreadCount(unreadTotal);
+        return;
+      }
+    } else {
+      rawData.value = await Promise.all(results.map(processMailWithCache));
+      handleNewMailNotification(!notifyPrimed);
+      notifyPrimed = true;
+      if (typeof totalCount === 'number') {
+        count.value = totalCount;
+      }
+      if (typeof unreadTotal === 'number') {
+        setUnreadCount(unreadTotal);
+      }
+      // 保留用户正在阅读的邮件，避免刷新时被强制跳回最新一封
+      const stillListed = previousMailId == null
+        ? null
+        : data.value.find((mail) => mail.id === previousMailId) || null;
+      curMail.value = stillListed
+        || ((!isMobile.value && !mailListView.value && data.value.length > 0) ? data.value[0] : null);
     }
-    if (typeof unreadTotal === 'number') {
-      setUnreadCount(unreadTotal);
-    }
-    // 保留用户正在阅读的邮件，避免刷新时被强制跳回最新一封
-    const stillListed = previousMailId == null
-      ? null
-      : data.value.find((mail) => mail.id === previousMailId) || null;
-    curMail.value = stillListed
-      || ((!isMobile.value && !mailListView.value && data.value.length > 0) ? data.value[0] : null);
   } catch (error) {
     // 页内展示错误并提供重试，避免只弹 toast 后列表空白
     loadError.value = error.message || "error";
@@ -347,11 +364,14 @@ const refresh = async () => {
   } finally {
     refreshLoading.value = false
   }
+  if (needsFullRefresh) {
+    await refresh()
+  }
 };
 
-const backFirstPageAndRefresh = async () => {
+const backFirstPageAndRefresh = async ({ incremental = false } = {}) => {
   if (page.value === 1) {
-    await refresh();
+    await refresh({ incremental });
   } else {
     // 切回第一页会触发分页监听刷新，避免重复请求
     page.value = 1;
