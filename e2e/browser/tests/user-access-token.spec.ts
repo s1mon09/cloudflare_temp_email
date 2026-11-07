@@ -257,7 +257,7 @@ for (const failure of [400, 401, 500, 'network'] as const) {
       expect(result.error).toContain(failure === 'network' ? 'Network Error' : 'Refresh failed');
     }
     expect(results[3].data).toEqual({ success: true });
-    expect(results[4].error).toContain('[403]: No send balance');
+    expect(results[4].error).toContain('No send balance');
     expect(flags).toEqual({ showAuth: false, showAdminAuth: false, loading: false });
     expect(refreshCount).toBe(2);
     expect(attempts.slice(0, 2).sort()).toEqual(['/api/send_mail', '/api/settings']);

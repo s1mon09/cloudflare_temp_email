@@ -29,6 +29,12 @@
 
 ### Improvements
 
+- feat: |Inbox| Show an inline error with a retry action when loading fails; use a unified empty state with a refresh action, and reuse the same credential modal in simple mode
+
+- fix: |UX| API error toasts no longer include `[400]`/`[403]` status prefixes and display the backend's localized message directly; e2e assertions updated accordingly
+
+- perf: |Database| Add a `(address, id)` composite index on `raw_mails` so inbox pagination can read rows in order after filtering by address without an extra sort
+
 - perf: |First Load| Lazy-load the user page, inbox, and mail parser, and load locale messages on demand, reducing the initial main bundle from about 611KB to about 240KB
 
 - fix: |UX| Use request counting plus a 300ms delay for the global loading overlay, fixing early dismissal with concurrent requests; inbox refresh no longer covers the whole page while parsing mail

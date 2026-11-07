@@ -289,7 +289,7 @@ test('Rule check errors and loading state never affect legacy delivery tests', a
     await dialog.getByText('指定 ID', { exact: true }).click();
     await dialog.getByPlaceholder('邮件 ID', { exact: true }).fill('987');
     await dialog.getByRole('button', { name: '仅检查规则', exact: true }).click();
-    await expect(page.getByText('[400]: Cannot evaluate filter', { exact: true })).toBeVisible();
+    await expect(page.getByText('Cannot evaluate filter', { exact: true })).toBeVisible();
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: '取消', exact: true }).click();
     await page.locator('#app').getByRole('button', { name: '测试', exact: true }).click();
@@ -404,7 +404,7 @@ for (const original of [expression, null]) {
             const response = page.waitForResponse(res => res.url().endsWith('/admin/mail_webhook/settings') && res.request().method() === 'POST');
             await save.click();
             expect((await response).status()).toBe(400);
-            await expect(page.getByText(/\[400\]: 无效的过滤规则/).last()).toBeVisible();
+            await expect(page.getByText(/无效的过滤规则/).last()).toBeVisible();
             expect((await (await request.get(endpoint)).json()).filter ?? null).toEqual(expectedFilter);
           } else {
             await expect(save).toBeDisabled();
@@ -474,11 +474,11 @@ for (const scope of ['admin', 'mailbox']) {
         const response = page.waitForResponse(res => res.url().endsWith(`${base}/settings`) && res.request().method() === 'POST');
         await save.click();
         expect((await response).status()).toBe(400);
-        await expect(page.getByText(/\[400\]: Invalid filter/).last()).toBeVisible();
+        await expect(page.getByText(/Invalid filter/).last()).toBeVisible();
         expect(await (await request.get(`${WORKER_URL}${base}/settings`, { headers })).json()).toEqual(initial);
         await check(400);
         await expect(page.getByRole('dialog')).toBeVisible();
-        await expect(page.getByText(/\[400\]: Invalid filter/).last()).toBeVisible();
+        await expect(page.getByText(/Invalid filter/).last()).toBeVisible();
         await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
         await expect(json).toHaveValue(JSON.stringify(filter));
       }

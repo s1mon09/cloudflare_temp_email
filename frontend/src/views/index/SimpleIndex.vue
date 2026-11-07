@@ -21,8 +21,9 @@ import { processItem } from '../../utils/email-parser'
 import MailContentRenderer from '../../components/MailContentRenderer.vue'
 import AddressSelect from '../../components/AddressSelect.vue'
 import AddressExpiry from '../../components/AddressExpiry.vue'
+import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
 
-const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings } = useGlobalState()
+const { jwt, settings, useSimpleIndex, showAddressCredential, openSettings, addressPassword } = useGlobalState()
 const message = useMessage()
 
 // 邮件数据
@@ -291,14 +292,8 @@ onBeforeUnmount(() => {
                 </div>
             </n-card>
         </div>
-        <n-modal v-model:show="showAddressCredential" preset="dialog" :title="t('addressCredential')">
-            <span>
-                <p>{{ t("addressCredentialTip") }}</p>
-            </span>
-            <n-card embedded>
-                <b>{{ jwt }}</b>
-            </n-card>
-        </n-modal>
+        <AddressCredentialModal v-model:show="showAddressCredential" :address="settings.address" :jwt="jwt"
+            :address-password="addressPassword" />
     </div>
 </template>
 

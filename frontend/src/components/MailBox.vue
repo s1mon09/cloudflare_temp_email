@@ -631,6 +631,16 @@ onBeforeUnmount(() => {
         </template>
         <template #1>
           <div class="mail-list-scroll mail-list-compact">
+            <div v-if="loadError" class="mail-load-error">
+              <n-alert type="error" :bordered="false">
+                {{ loadError }}
+                <template #action>
+                  <n-button size="small" tertiary type="primary" @click="backFirstPageAndRefresh">
+                    {{ t('retry') }}
+                  </n-button>
+                </template>
+              </n-alert>
+            </div>
             <n-list hoverable clickable>
               <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
                 :class="[mailItemClass(row), { 'mail-list-unread': enableMailReadStatus && row.is_unread === 1 }]">
@@ -682,15 +692,30 @@ onBeforeUnmount(() => {
               :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
           </n-card>
           <n-card :bordered="false" embedded class="mail-item" v-else>
-            <n-result status="info" :title="count === 0 ? t('emptyInbox') : t('pleaseSelectMail')">
+            <n-empty :description="count === 0 ? t('emptyInbox') : t('pleaseSelectMail')">
               <template #icon>
-                <n-icon :component="InboxRound" :size="100" />
+                <n-icon :component="InboxRound" :size="64" />
               </template>
-            </n-result>
+              <template #extra v-if="count === 0">
+                <n-button size="small" tertiary type="primary" @click="backFirstPageAndRefresh">
+                  {{ t('refresh') }}
+                </n-button>
+              </template>
+            </n-empty>
           </n-card>
         </template>
       </n-split>
       <div v-else class="mail-list-scroll mail-list-compact">
+        <div v-if="loadError" class="mail-load-error">
+          <n-alert type="error" :bordered="false">
+            {{ loadError }}
+            <template #action>
+              <n-button size="small" tertiary type="primary" @click="backFirstPageAndRefresh">
+                {{ t('retry') }}
+              </n-button>
+            </template>
+          </n-alert>
+        </div>
         <n-list hoverable clickable>
           <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
             :class="[mailItemClass(row), { 'mail-list-unread': enableMailReadStatus && row.is_unread === 1 }]">
@@ -893,5 +918,10 @@ pre {
 .mail-toolbar-filter {
   max-width: 320px;
   margin-top: 8px;
+}
+
+/* 加载失败提示与列表保持一致的留白 */
+.mail-load-error {
+  padding: 8px 10px 0;
 }
 </style>

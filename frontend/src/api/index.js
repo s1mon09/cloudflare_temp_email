@@ -98,13 +98,13 @@ const apiRequest = async (path, options = {}) => {
             showAuth.value = true;
         }
         if (response.status >= 300) {
-            throw new Error(`[${response.status}]: ${response.data?.message || response.data}`);
+            throw new Error(response.data?.message || response.data || `Request failed (${response.status})`);
         }
         const data = response.data;
         return data;
     } catch (error) {
         if (error.response) {
-            throw new Error(`Code ${error.response.status}: ${error.response.data?.message || error.response.data}`);
+            throw new Error(error.response.data?.message || error.response.data || error.response.statusText || `Request failed (${error.response.status})`);
         }
         throw error;
     } finally {
