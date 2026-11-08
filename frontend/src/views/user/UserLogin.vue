@@ -8,7 +8,7 @@ import { api } from '../../api';
 import { useGlobalState } from '../../store'
 import { hashPassword } from '../../utils';
 import { sanitizeHtml } from '../../utils/sanitize-html';
-import { startAuthentication } from '@simplewebauthn/browser';
+import { startAuthentication, browserSupportsWebAuthn } from '@simplewebauthn/browser';
 
 import Turnstile from '../../components/Turnstile.vue';
 
@@ -22,6 +22,9 @@ const { t } = useScopedI18n('views.user.UserLogin')
 
 const tabValue = ref("signin");
 const showModal = ref(false);
+// iOS Safari / macOS 均需安全上下文（HTTPS）与系统级 WebAuthn 支持，
+// 不支持时隐藏入口，避免用户点击后只看到一句报错。
+const passkeySupported = browserSupportsWebAuthn();
 const user = ref({
     email: "",
     password: "",
@@ -185,11 +188,12 @@ onMounted(async () => {
             <n-tab-pane name="signin" :tab="t('login')">
                 <n-form>
                     <n-form-item-row :label="t('email')" required>
-                        <n-input v-model:value="user.email" />
+                        <n-input v-model:value="user.email" type="email" inputmode="email" autocomplete="username"
+                            autocapitalize="off" autocorrect="off" spellcheck="false" />
                     </n-form-item-row>
                     <n-form-item-row :label="t('password')" required>
                         <n-input v-model:value="user.password" type="password" show-password-on="click"
-                            @keyup.enter="emailLogin" />
+                            autocomplete="current-password" @keyup.enter="emailLogin" />
                     </n-form-item-row>
                     <Turnstile ref="loginTurnstileRef" v-if="openSettings.enableGlobalTurnstileCheck" v-model:value="loginCfToken" />
                     <n-button @click="emailLogin" type="primary" block secondary strong>
@@ -198,8 +202,8 @@ onMounted(async () => {
                     <n-button @click="showModal = true" type="info" quaternary size="tiny">
                         {{ t('forgotPassword') }}
                     </n-button>
-                    <n-divider />
-                    <n-button @click="passkeyLogin" type="primary" block secondary strong>
+                    <n-divider v-if="passkeySupported" />
+                    <n-button v-if="passkeySupported" @click="passkeyLogin" type="primary" block secondary strong>
                         <template #icon>
                             <n-icon :component="KeyFilled" />
                         </template>
@@ -217,16 +221,17 @@ onMounted(async () => {
             <n-tab-pane v-if="userOpenSettings.enable" name="signup" :tab="t('register')">
                 <n-form>
                     <n-form-item-row :label="t('email')" required>
-                        <n-input v-model:value="user.email" />
+                        <n-input v-model:value="user.email" type="email" inputmode="email" autocomplete="username"
+                            autocapitalize="off" autocorrect="off" spellcheck="false" />
                     </n-form-item-row>
                     <n-form-item-row :label="t('password')" required>
                         <n-input v-model:value="user.password" type="password" show-password-on="click"
-                            @keyup.enter="emailSignup" />
+                            autocomplete="new-password" @keyup.enter="emailSignup" />
                     </n-form-item-row>
                     <Turnstile ref="signupTurnstileRef" v-if="userOpenSettings.enableMailVerify" v-model:value="signupCfToken" />
                     <n-form-item-row v-if="userOpenSettings.enableMailVerify" :label="t('verifyCode')" required>
                         <n-input-group>
-                            <n-input v-model:value="user.code" />
+                            <n-input v-model:value="user.code" inputmode="numeric" autocomplete="one-time-code" />
                             <n-button @click="sendVerificationCode" style="margin-bottom: 0" type="primary" ghost
                                 :disabled="verifyCodeTimeout > 0">
                                 {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout })
@@ -244,16 +249,17 @@ onMounted(async () => {
         <n-modal v-model:show="showModal" style="max-width: 600px;" preset="card" :title="t('forgotPassword')">
             <n-form v-if="userOpenSettings.enable && userOpenSettings.enableMailVerify">
                 <n-form-item-row :label="t('email')" required>
-                    <n-input v-model:value="user.email" />
+                    <n-input v-model:value="user.email" type="email" inputmode="email" autocomplete="username"
+                        autocapitalize="off" autocorrect="off" spellcheck="false" />
                 </n-form-item-row>
                 <n-form-item-row :label="t('password')" required>
                     <n-input v-model:value="user.password" type="password" show-password-on="click"
-                        @keyup.enter="emailSignup" />
+                        autocomplete="new-password" @keyup.enter="emailSignup" />
                 </n-form-item-row>
                 <Turnstile ref="resetTurnstileRef" v-model:value="resetCfToken" />
                 <n-form-item-row :label="t('verifyCode')" required>
                     <n-input-group>
-                        <n-input v-model:value="user.code" />
+                        <n-input v-model:value="user.code" inputmode="numeric" autocomplete="one-time-code" />
                         <n-button @click="sendVerificationCode" style="margin-bottom: 0" type="primary" ghost
                             :disabled="verifyCodeTimeout > 0">
                             {{ verifyCodeTimeout > 0 ? t('waitforVerifyCode', { timeout: verifyCodeTimeout })

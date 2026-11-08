@@ -12,7 +12,7 @@ const { t } = useScopedI18n('views.Footer')
 <template>
     <div>
         <n-divider class="footer-divider" />
-        <div style="text-align: center; padding: 20px">
+        <div class="footer-content">
             <n-space justify="center">
                 <n-text depth="3">
                     {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
@@ -30,5 +30,10 @@ const { t } = useScopedI18n('views.Footer')
 .footer-divider {
     margin: 0;
     padding: 0 var(--x-padding);
+}
+
+.footer-content {
+    text-align: center;
+    padding: 20px max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
 }
 </style>

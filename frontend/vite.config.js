@@ -63,14 +63,37 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
       },
       manifest: {
+        id: '/',
         name: 'Temp Email',
         short_name: 'Temp Email',
         description: 'Temp Email - Temporary Email',
+        lang: 'zh-CN',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#ffffff',
         theme_color: '#ffffff',
         icons: [
           {
-            src: '/logo.png',
+            src: '/icon-192.png',
             sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/apple-touch-icon.png',
+            sizes: '180x180',
             type: 'image/png'
           }
         ]

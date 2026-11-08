@@ -3,15 +3,18 @@ import { ref, computed, watch, nextTick } from "vue";
 import { useThemeVars } from 'naive-ui';
 import { useScopedI18n } from '@/i18n/app'
 import { CloudDownloadRound, ReplyFilled, ForwardFilled, FullscreenRound, ImageRound, AttachFileRound,
-  MarkEmailReadRound, MarkEmailUnreadRound, MoreHorizRound, DeleteOutlineRound, TextSnippetRound, InfoOutlined } from '@vicons/material'
+  MarkEmailReadRound, MarkEmailUnreadRound, MoreHorizRound, DeleteOutlineRound, TextSnippetRound, InfoOutlined,
+  ShareRound } from '@vicons/material'
 import ShadowHtmlComponent from "./ShadowHtmlComponent.vue";
 import AiExtractInfo from "./AiExtractInfo.vue";
 import { getDownloadEmlUrl } from '../utils/email-parser';
 import { blockRemoteContent } from '../utils/remote-content-policy';
-import { utcToLocalDate } from '../utils';
+import { utcToLocalDate, buildMailSrcdoc, canShareContent, htmlToPlainText, shareContent, shareFile } from '../utils';
 import { useGlobalState } from '../store';
 
 const { preferShowTextMail, useIframeShowMail, useUTCDate, isDark, autoLoadRemoteImages } = useGlobalState();
+
+const message = useMessage();
 
 const { t } = useScopedI18n('components.MailContentRenderer')
 const themeVars = useThemeVars();
@@ -105,6 +108,42 @@ const processedMail = computed(() => {
   });
   return { message: html, blocked };
 });
+
+// 给 iframe 文档补上 viewport 与基础排版，iOS Safari 才会按屏幕宽度渲染邮件。
+const mailSrcdoc = computed(() => buildMailSrcdoc(processedMail.value.message));
+
+const shareSupported = canShareContent();
+
+const handleShareMail = async () => {
+  closeMoreActions();
+  const text = (props.mail.text || htmlToPlainText(props.mail.message) || '').trim();
+  const ok = await shareContent({
+    title: props.mail.subject || t('share'),
+    text: text || props.mail.subject || '',
+  });
+  if (!ok) message.error(t('shareFailed'));
+};
+
+const handleShareAttachment = async (row) => {
+  // 附件在解析邮件时已经生成 Blob，直接分享可以保留用户的点击激活状态；
+  // iOS 要求 navigator.share 必须在用户手势内同步触发。
+  if (!row.blob) {
+    window.open(row.url, '_blank', 'noopener');
+    return;
+  }
+  try {
+    attachmentLoding.value = true;
+    const ok = await shareFile(row.blob, row.filename || 'attachment');
+    if (!ok) {
+      window.open(row.url, '_blank', 'noopener');
+    }
+  } catch (error) {
+    console.error(error);
+    message.error(t('shareFailed'));
+  } finally {
+    attachmentLoding.value = false;
+  }
+};
 
 const handleLoadRemoteImages = () => {
   showRemoteImages.value = true;
@@ -214,6 +253,10 @@ const handleSaveToS3 = async (filename, blob) => {
               </n-button>
             </template>
             <div class="mail-more-actions" @keydown.esc.stop.prevent="closeMoreActions">
+              <n-button v-if="shareSupported" block quaternary size="small" @click="handleShareMail">
+                <template #icon><n-icon :component="ShareRound" /></template>
+                {{ t('share') }}
+              </n-button>
               <n-button ref="downloadMailButton" tag="a" target="_blank" block quaternary size="small" :download="mail.id + '.eml'"
                 :href="getDownloadEmlUrl(mail.raw)" @click="closeMoreActions">
                 <template #icon><n-icon :component="CloudDownloadRound" /></template>
@@ -273,7 +316,8 @@ const handleSaveToS3 = async (filename, blob) => {
     <!-- 邮件内容 -->
     <div class="mail-content" :class="{ 'dark-mode': isDark }">
       <pre v-if="showTextMail" class="mail-text">{{ mail.text }}</pre>
-      <iframe v-else-if="useIframeShowMail" :srcdoc="processedMail.message" class="mail-iframe">
+      <iframe v-else-if="useIframeShowMail" :srcdoc="mailSrcdoc" class="mail-iframe"
+        sandbox="allow-popups allow-popups-to-escape-sandbox">
       </iframe>
       <ShadowHtmlComponent v-else :key="mail.id" :htmlContent="processedMail.message" :isDark="isDark" class="mail-html" />
     </div>
@@ -303,11 +347,12 @@ const handleSaveToS3 = async (filename, blob) => {
   </n-modal>
 
   <n-drawer v-model:show="showFullscreen" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
-    style="height: 100vh;">
+    style="height: 100vh; height: 100dvh;">
     <n-drawer-content :title="mail.subject" closable>
       <div class="fullscreen-mail-content" :class="{ 'dark-mode': isDark }">
         <pre v-if="showTextMail" class="mail-text">{{ mail.text }}</pre>
-        <iframe v-else-if="useIframeShowMail" :srcdoc="processedMail.message" class="mail-iframe">
+        <iframe v-else-if="useIframeShowMail" :srcdoc="mailSrcdoc" class="mail-iframe"
+          sandbox="allow-popups allow-popups-to-escape-sandbox">
         </iframe>
         <ShadowHtmlComponent v-else :key="mail.id" :htmlContent="processedMail.message" :isDark="isDark" class="mail-html" />
       </div>
@@ -336,10 +381,16 @@ const handleSaveToS3 = async (filename, blob) => {
             </template>
           </n-thing>
           <template #suffix>
-            <n-button tag="a" target="_blank" tertiary type="info" size="small" :download="row.filename"
-              :href="row.url">
-              <n-icon :component="CloudDownloadRound" />
-            </n-button>
+            <n-space align="center" :size="4" :wrap="false">
+              <n-button v-if="shareSupported" tertiary type="info" size="small" :title="t('share')"
+                :aria-label="t('share')" @click="handleShareAttachment(row)">
+                <n-icon :component="ShareRound" />
+              </n-button>
+              <n-button tag="a" target="_blank" rel="noopener noreferrer" tertiary type="info" size="small"
+                :download="row.filename" :href="row.url">
+                <n-icon :component="CloudDownloadRound" />
+              </n-button>
+            </n-space>
           </template>
         </n-list-item>
       </n-list>
@@ -454,10 +505,14 @@ const handleSaveToS3 = async (filename, blob) => {
 
 .fullscreen-mail-content {
   height: calc(100vh - 120px);
+  height: calc(100dvh - 120px);
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .fullscreen-mail-content .mail-iframe {
   min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
 }
 </style>

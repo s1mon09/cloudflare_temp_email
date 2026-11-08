@@ -567,6 +567,8 @@ export const deMessages = {
   "components.MailContentRenderer.showTextMail": "Textmail anzeigen",
   "views.Index.enterSimpleMode": "Einfacher Modus",
   "components.MailContentRenderer.size": "Größe",
+  "components.MailContentRenderer.share": "Teilen",
+  "components.MailContentRenderer.shareFailed": "Teilen nicht möglich, bitte erneut versuchen",
   "views.admin.Account.source_meta": "Quelle",
   "views.admin.AccountSettings.source_patterns": "Regex für Quelladresse (optional)",
   "views.admin.Maintenance.sqlStatement": "SQL-Anweisung (nur DELETE)",

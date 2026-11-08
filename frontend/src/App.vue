@@ -26,6 +26,13 @@ const localeConfig = computed(() => getNaiveLocaleConfig(isSupportedLocale(local
 const isMobile = useIsMobile()
 const { t } = useScopedI18n('components.App')
 
+// 跟随应用主题更新 iOS 状态栏 / Safari 顶栏颜色。
+useHead({
+  meta: [
+    { name: 'theme-color', content: computed(() => isDark.value ? '#101014' : '#ffffff') },
+  ],
+})
+
 // 网络离线时在页面顶部提示，恢复联网后自动隐藏
 const isOffline = ref(typeof navigator !== 'undefined' && navigator.onLine === false)
 const handleOnline = () => { isOffline.value = false }
@@ -145,6 +152,26 @@ onBeforeUnmount(() => {
   margin-right: 10px;
 }
 
+/* iOS：避免横竖屏切换时 Safari 自动放大文字 */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* dvh 在 iOS 地址栏收起/展开时不会跳动，旧内核回退到 vh */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* 安全区：刘海屏底部手势条不遮挡回到顶部按钮 */
+.n-back-top {
+  bottom: calc(40px + env(safe-area-inset-bottom)) !important;
+  right: calc(40px + env(safe-area-inset-right)) !important;
+}
+
+/* iOS 输入框自动缩放已在下面统一处理 */
 @media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   :where(input, textarea, select, [contenteditable="true"]) {
     font-size: 16px !important;
@@ -159,11 +186,15 @@ onBeforeUnmount(() => {
 <style scoped>
 .side {
   height: 100vh;
+  height: 100dvh;
 }
 
 .main {
   height: 100vh;
+  height: 100dvh;
   text-align: center;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .n-grid {

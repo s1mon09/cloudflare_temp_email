@@ -339,6 +339,14 @@ export const MESSAGE_REGISTRY = {
     "size": {
       "en": "Size",
       "zh": "大小"
+    },
+    "share": {
+      "en": "Share",
+      "zh": "分享"
+    },
+    "shareFailed": {
+      "en": "Unable to share, please try again",
+      "zh": "分享失败，请重试"
     }
   },
   "components.Turnstile": {

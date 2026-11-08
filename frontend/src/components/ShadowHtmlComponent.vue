@@ -7,6 +7,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { EMAIL_BASE_STYLES } from '../utils';
 
 const props = defineProps({
     htmlContent: {
@@ -46,7 +47,9 @@ const renderShadowDom = () => {
 
         // Update content if Shadow DOM exists
         if (shadowRoot) {
-            shadowRoot.innerHTML = props.htmlContent;
+            // 基础排版样式放在邮件自身 <style> 之前，邮件仍可覆盖；
+            // 主要解决 iOS 上超大图片/固定宽度表格横向溢出的问题。
+            shadowRoot.innerHTML = `<style>${EMAIL_BASE_STYLES}</style>${props.htmlContent}`;
         }
     } catch (error) {
         console.error('Failed to render Shadow DOM, falling back to v-html:', error);

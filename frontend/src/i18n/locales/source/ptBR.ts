@@ -567,6 +567,8 @@ export const ptBRMessages = {
   "components.MailContentRenderer.showTextMail": "Mostrar e-mail em texto",
   "views.Index.enterSimpleMode": "Modo simples",
   "components.MailContentRenderer.size": "Tamanho",
+  "components.MailContentRenderer.share": "Compartilhar",
+  "components.MailContentRenderer.shareFailed": "Não foi possível compartilhar, tente novamente",
   "views.admin.Account.source_meta": "Origem",
   "views.admin.AccountSettings.source_patterns": "Regex do endereço de origem (opcional)",
   "views.admin.Maintenance.sqlStatement": "Comando SQL (somente DELETE)",

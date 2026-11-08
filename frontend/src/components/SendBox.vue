@@ -225,7 +225,7 @@ onMounted(async () => {
           </div>
         </template>
         <template #1>
-          <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+          <div style="overflow: auto; min-height: 60vh; max-height: 100vh; max-height: 100dvh;">
             <n-list hoverable clickable>
               <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
                 :class="mailItemClass(row)">
@@ -254,7 +254,7 @@ onMounted(async () => {
         </template>
         <template #2>
           <n-card :bordered="false" embedded v-if="curMail" class="mail-item" :title="curMail.subject"
-            style="overflow: auto; max-height: 100vh;">
+            style="overflow: auto; max-height: 100vh; max-height: 100dvh;">
             <n-space>
               <n-tag type="info">
                 ID: {{ curMail.id }}
@@ -301,7 +301,7 @@ onMounted(async () => {
           {{ t('refresh') }}
         </n-button>
       </div>
-      <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+      <div style="overflow: auto; min-height: 60vh; max-height: 100vh; max-height: 100dvh;">
         <n-list hoverable clickable>
           <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)">
             <n-thing :title="row.subject">

@@ -15,10 +15,16 @@
 - feat: |Inbox| When mail read status is enabled, show an unread-count badge on the browser title and favicon (including simple mode); it updates in real time on read/unread toggles and clears when leaving the inbox
 - feat: |User System| Add `DISABLE_USER_SYSTEM` to block user APIs, disable user admin tokens, and hide user interfaces
 - feat: |Mailbox Login| Add a password-only login-page switch that requires mailbox passwords; preserve existing credentials, login links, API access, and JWT lifetimes
+- feat: |iOS| Share mail bodies and attachments through the system share sheet, so iPhone/iPad users can AirDrop them or save to Files
+- feat: |iOS| Ship home-screen icons (192/512/180) and a standalone manifest, so the app launches as a standalone app when added to the home screen
+- feat: |iOS| Add email-keyboard and one-time-code autofill hints to mailbox/code inputs, and only show passkey login on devices that support WebAuthn (iOS 16+ / macOS)
 
 ### Bug Fixes
 
 - fix: |Mail Reader| Reset inherited application defaults in Shadow mail and use browser-default system colors for a normal document while preserving sender colors
+- fix: |iOS| Respect notch and home-indicator safe areas, and use `dvh` heights for the mail drawer, fullscreen reader, and inbox list so content is not clipped or jumping when Safari's address bar collapses
+- fix: |iOS| Add viewport and base layout styles to mail bodies, fixing horizontal overflow from fixed-width emails and oversized images on iOS
+- fix: |iOS| Fall back to `execCommand` when `navigator.clipboard` is unavailable, fixing silent copy failures for verification codes and mailbox addresses on older iOS versions
 - fix: |Telegram| Clean up the current push recipient's binding and push mapping before admin mailbox deletion, freeing a slot and preventing stale pushes on recreation; KV cleanup failures preserve the mailbox for retry, while database deletion failures may leave it unbound
 - fix: |CI| Fix WASM npm publishing paths so local tarballs are not interpreted as GitHub repositories
 - fix: |Mail Parser| Upgrade WASM parser dependencies and use raw values only for structured headers, preserving decoded text headers while fixing `header.From` webhook filters and sender loss after attachment removal
@@ -56,6 +62,14 @@
 - perf: |CI| Organize test suites and run a dedicated Webhook UI group alongside API, other browser tests and SMTP/IMAP, with only each group's required services, separate unit/WASM tests and one aggregate check
 
 - feat: |CI| Add a fast CI gate on pushes to main and pull requests: Worker ESLint and build, frontend unit tests and build, with pnpm dependency caching and in-progress cancellation on new commits
+
+- fix: |Database| Align the new-database init SQL with `db/schema.sql`: include `address.expires_at` with its index and the `raw_mails(address, id)` composite index, and add an idempotent `expires_at` migration step
+
+- fix: |Admin| Aggregate mailbox and send counts for the address list with joins instead of two correlated subqueries per row
+
+- fix: |Mail Reader| Sandbox iframe-rendered mail so scripts cannot run even if sanitization is bypassed
+
+- fix: |i18n| Missing German, Spanish, Japanese and Portuguese messages now fall back to English instead of Chinese
 
 ## v1.13.0
 

@@ -5,6 +5,7 @@ import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
 import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, ContentCopyOutlined, NotificationsActiveFilled, NotificationsNoneFilled } from '@vicons/material'
 import { useIsMobile, useUnreadBadge } from '../utils/composables'
+import { copyToClipboard } from '../utils'
 import { processItem } from '../utils/email-parser'
 import { buildReplyModel, buildForwardModel } from '../utils/mail-actions'
 import MailContentRenderer from "./MailContentRenderer.vue";
@@ -405,10 +406,10 @@ const latestCode = computed(() => {
 })
 
 const copyLatestCode = async () => {
-  try {
-    await navigator.clipboard.writeText(latestCode.value)
+  const copied = await copyToClipboard(latestCode.value)
+  if (copied) {
     message.success(t('copySuccess'))
-  } catch (e) {
+  } else {
     message.error(t('copyFailed'))
   }
 }
@@ -705,7 +706,7 @@ onBeforeUnmount(() => {
             </n-flex>
           </div>
           <n-card :bordered="false" v-if="curMail" class="mail-item" :title="curMail.subject"
-            style="overflow: auto; max-height: 100vh;">
+            style="overflow: auto; max-height: 100vh; max-height: 100dvh;">
             <MailContentRenderer :mail="curMail" :showEMailTo="showEMailTo"
               :enableUserDeleteEmail="enableUserDeleteEmail" :showReply="showReply" :showSaveS3="showSaveS3"
               :enableMailReadStatus="enableMailReadStatus" :onUpdateMailReadStatus="toggleCurrentMailUnread"
@@ -874,8 +875,10 @@ onBeforeUnmount(() => {
 .mail-list-scroll {
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   min-height: 60vh;
   max-height: 100vh;
+  max-height: 100dvh;
 }
 
 .mail-list-compact :deep(.n-list-item) {

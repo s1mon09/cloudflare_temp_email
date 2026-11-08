@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS raw_mails (
 
 CREATE INDEX IF NOT EXISTS idx_raw_mails_address ON raw_mails(address);
 
+CREATE INDEX IF NOT EXISTS idx_raw_mails_address_id ON raw_mails(address, id);
+
 CREATE INDEX IF NOT EXISTS idx_raw_mails_created_at ON raw_mails(created_at);
 
 CREATE INDEX IF NOT EXISTS idx_raw_mails_message_id ON raw_mails(message_id);
@@ -26,6 +28,7 @@ CREATE TABLE IF NOT EXISTS address (
     name TEXT UNIQUE,
     password TEXT,
     source_meta TEXT,
+    expires_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,6 +40,8 @@ CREATE INDEX IF NOT EXISTS idx_address_created_at ON address(created_at);
 CREATE INDEX IF NOT EXISTS idx_address_updated_at ON address(updated_at);
 
 CREATE INDEX IF NOT EXISTS idx_address_source_meta ON address(source_meta);
+
+CREATE INDEX IF NOT EXISTS idx_address_expires_at ON address(expires_at);
 
 CREATE TABLE IF NOT EXISTS auto_reply_mails (
     id INTEGER PRIMARY KEY,
@@ -220,6 +225,14 @@ export default {
                 await c.env.DB.exec(
                     `ALTER TABLE raw_mails ADD COLUMN is_unread INTEGER;`
                 );
+            }
+        }
+        if (version && version <= "v0.0.8") {
+            // migration to v0.0.9: add mailbox expiration column and index
+            const tableInfo = await c.env.DB.prepare(`PRAGMA table_info(address)`).all();
+            if (!tableInfo.results?.some((col: any) => col.name === 'expires_at')) {
+                await c.env.DB.exec(`ALTER TABLE address ADD COLUMN expires_at DATETIME;`);
+                await c.env.DB.exec(`CREATE INDEX IF NOT EXISTS idx_address_expires_at ON address(expires_at);`);
             }
         }
         if (version != CONSTANTS.DB_VERSION) {

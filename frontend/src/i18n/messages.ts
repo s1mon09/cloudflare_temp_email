@@ -49,10 +49,28 @@ const buildSourceLocaleMessages = (locale: SourceLocale) => {
   return messages
 }
 
+const buildEnglishFlatMessages = () => {
+  const messages: Record<string, string> = {}
+
+  for (const namespace of Object.keys(MESSAGE_REGISTRY) as MessageNamespace[]) {
+    const keys = Object.keys(MESSAGE_REGISTRY[namespace]) as MessageKey<typeof namespace>[]
+    for (const key of keys) {
+      const message = getMessageSource(namespace, key, 'en')
+      if (message === undefined) continue
+      messages[`${namespace}.${key}`] = message
+    }
+  }
+
+  return messages
+}
+
+const EN_FLAT_MESSAGES = buildEnglishFlatMessages()
+
 const buildAdditionalLocaleMessages = (source: Record<string, string>) => {
   const messages: LocaleTree = {}
 
-  for (const [key, value] of Object.entries(source)) {
+  // 额外语言缺少的 key 回退到英文，避免回落到中文
+  for (const [key, value] of Object.entries({ ...EN_FLAT_MESSAGES, ...source })) {
     setNestedValue(messages, key, value)
   }
 

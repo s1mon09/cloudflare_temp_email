@@ -297,7 +297,8 @@ onMounted(async () => {
                 </n-space>
             </template>
         </n-page-header>
-        <n-drawer v-model:show="showMobileMenu" placement="top" style="height: 100vh;">
+        <n-drawer v-model:show="showMobileMenu" placement="top" class="mobile-menu-drawer"
+            style="height: 100vh; height: 100dvh;">
             <n-drawer-content :title="t('menu')" closable>
                 <n-menu :options="menuOptions" />
                 <div class="mobile-menu-actions">
@@ -468,7 +469,7 @@ onMounted(async () => {
 
 @media (max-width: 640px) {
     :deep(.n-page-header) {
-        padding: 10px 12px;
+        padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left));
     }
 
     :deep(.n-page-header__title) {
@@ -481,6 +482,12 @@ onMounted(async () => {
         font-size: clamp(16px, 5vw, 20px);
         line-height: 1.2;
     }
+}
+
+/* 顶部抽屉在刘海屏上避开状态栏，并给底部手势条留出空间 */
+.mobile-menu-drawer :deep(.n-drawer-content) {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
 </style>

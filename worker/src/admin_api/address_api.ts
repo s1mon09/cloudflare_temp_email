@@ -6,6 +6,13 @@ import { getBooleanValue } from '../utils'
 import { newAddress, handleListQuery } from '../common'
 import { unbindTelegramByAddress } from '../telegram_api/common'
 
+const ADDRESS_LIST_SELECT = `SELECT a.*,`
+    + ` COALESCE(m.mail_count, 0) AS mail_count,`
+    + ` COALESCE(s.send_count, 0) AS send_count`
+    + ` FROM address a`
+    + ` LEFT JOIN (SELECT address, COUNT(*) AS mail_count FROM raw_mails GROUP BY address) m ON m.address = a.name`
+    + ` LEFT JOIN (SELECT address, COUNT(*) AS send_count FROM sendbox GROUP BY address) s ON s.address = a.name`;
+
 const listAddresses = async (c: Context<HonoCustomType>) => {
     const { limit, offset, query, sort_by, sort_order } = c.req.query();
     const allowedSortColumns: Record<string, string> = {
@@ -24,23 +31,17 @@ const listAddresses = async (c: Context<HonoCustomType>) => {
         // D1 caps LIKE pattern length at 50 bytes; fall back to instr() for
         // longer queries to avoid "LIKE or GLOB pattern too complex" (#956).
         const useInstr = new TextEncoder().encode(query).length + 2 > 50;
-        const whereClause = useInstr ? `instr(name, ?) > 0` : `name like ?`;
+        const whereClause = useInstr ? `instr(a.name, ?) > 0` : `a.name like ?`;
+        const countWhereClause = useInstr ? `instr(name, ?) > 0` : `name like ?`;
         const param = useInstr ? query : `%${query}%`;
         return await handleListQuery(c,
-            `SELECT a.*,`
-            + ` (SELECT COUNT(*) FROM raw_mails WHERE address = a.name) AS mail_count,`
-            + ` (SELECT COUNT(*) FROM sendbox WHERE address = a.name) AS send_count`
-            + ` FROM address a`
-            + ` where ${whereClause}`,
-            `SELECT count(*) as count FROM address where ${whereClause}`,
+            `${ADDRESS_LIST_SELECT} where ${whereClause}`,
+            `SELECT count(*) as count FROM address where ${countWhereClause}`,
             [param], limit, offset, orderBy, ['password']
         );
     }
     return await handleListQuery(c,
-        `SELECT a.*,`
-        + ` (SELECT COUNT(*) FROM raw_mails WHERE address = a.name) AS mail_count,`
-        + ` (SELECT COUNT(*) FROM sendbox WHERE address = a.name) AS send_count`
-        + ` FROM address a`,
+        ADDRESS_LIST_SELECT,
         `SELECT count(*) as count FROM address`,
         [], limit, offset, orderBy, ['password']
     );

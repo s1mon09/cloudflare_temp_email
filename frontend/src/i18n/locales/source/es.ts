@@ -567,6 +567,8 @@ export const esMessages = {
   "components.MailContentRenderer.showTextMail": "Mostrar correo en texto",
   "views.Index.enterSimpleMode": "Modo simple",
   "components.MailContentRenderer.size": "Tamaño",
+  "components.MailContentRenderer.share": "Compartir",
+  "components.MailContentRenderer.shareFailed": "No se pudo compartir, inténtalo de nuevo",
   "views.admin.Account.source_meta": "Origen",
   "views.admin.AccountSettings.source_patterns": "Regex de dirección de origen (opcional)",
   "views.admin.Maintenance.sqlStatement": "Sentencia SQL (solo DELETE)",

@@ -4,6 +4,7 @@ import { useScopedI18n } from '@/i18n/app';
 import { ContentCopyOutlined, LinkRound, CodeRound } from '@vicons/material';
 import { useMessage } from 'naive-ui';
 import { useGlobalState } from '../store';
+import { copyToClipboard as copyTextToClipboard } from '../utils';
 
 const message = useMessage();
 const { isDark } = useGlobalState();
@@ -94,10 +95,10 @@ const displayText = computed(() => {
 });
 
 const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText(aiExtract.value.result);
+  const copied = await copyTextToClipboard(aiExtract.value.result);
+  if (copied) {
     message.success(t('copySuccess'));
-  } catch (e) {
+  } else {
     message.error(t('copyFailed'));
   }
 };

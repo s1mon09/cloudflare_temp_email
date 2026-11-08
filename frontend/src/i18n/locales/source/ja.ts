@@ -567,6 +567,8 @@ export const jaMessages = {
   "components.MailContentRenderer.showTextMail": "テキストメールを表示",
   "views.Index.enterSimpleMode": "シンプルモード",
   "components.MailContentRenderer.size": "サイズ",
+  "components.MailContentRenderer.share": "共有",
+  "components.MailContentRenderer.shareFailed": "共有できませんでした。もう一度お試しください",
   "views.admin.Account.source_meta": "送信元",
   "views.admin.AccountSettings.source_patterns": "送信元アドレス正規表現 (任意)",
   "views.admin.Maintenance.sqlStatement": "SQL文 (DELETEのみ)",

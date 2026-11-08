@@ -15,6 +15,7 @@ import {
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 import { useUnreadBadge } from '../../utils/composables'
+import { copyToClipboard } from '../../utils'
 import Login from '../common/Login.vue'
 import AccountSettings from './AccountSettings.vue'
 import { processItem } from '../../utils/email-parser'
@@ -45,12 +46,12 @@ const { setUnreadCount, clearUnreadBadge } = useUnreadBadge()
 const addressCopied = ref(false)
 let addressCopiedTimer = null
 const copyAddress = async () => {
-    try {
-        await navigator.clipboard.writeText(settings.value.address)
+    const copied = await copyToClipboard(settings.value.address)
+    if (copied) {
         addressCopied.value = true
         clearTimeout(addressCopiedTimer)
         addressCopiedTimer = setTimeout(() => { addressCopied.value = false }, 1500)
-    } catch (error) {
+    } else {
         message.error(t('copyFailed'))
     }
 }
